@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2020-03-24T01:12:21.418Z" agent="Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0" etag="ickD91lVJOK03D1sgMsA" version="12.8.8" type="github" pages="3">
+<mxfile host="app.diagrams.net" modified="2020-03-24T01:20:40.893Z" agent="Mozilla/5.0 (Windows NT 10.0; WOW64; rv:56.0) Gecko/20100101 Firefox/56.0" etag="TaDyPFop2ao5Q3zZc3vW" version="12.8.8" type="github" pages="3">
   <diagram name="Page-1" id="6133507b-19e7-1e82-6fc7-422aa6c4b21f">
     <mxGraphModel dx="1422" dy="771" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="#ffffff" math="0" shadow="0">
       <root>
@@ -419,7 +419,7 @@
         <mxCell id="OrEYHRZfROdFBzFDhLky-0" value="+ ActivityLog(): map[string] interface{}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="sSNNKG63OonMULgQ_tP3-20">
           <mxGeometry y="78" width="300" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="sSNNKG63OonMULgQ_tP3-23" value="+ EstablishLink(WDS&lt;I&gt;, WDS&lt;I&gt;): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="sSNNKG63OonMULgQ_tP3-20" vertex="1">
+        <mxCell id="sSNNKG63OonMULgQ_tP3-23" value="+ EstablishLink(...WDS&lt;I&gt;): boolean" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="sSNNKG63OonMULgQ_tP3-20" vertex="1">
           <mxGeometry y="104" width="300" height="26" as="geometry" />
         </mxCell>
         <mxCell id="sSNNKG63OonMULgQ_tP3-24" value="+ Assign(Node&lt;I&gt;): void" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="sSNNKG63OonMULgQ_tP3-20" vertex="1">
