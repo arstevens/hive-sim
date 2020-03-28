@@ -3,12 +3,12 @@ package simulator
 import "crypto/rsa"
 
 type Node interface {
-	Activate()
 	Id() string
+	Conn() chan string
 	Tokens() float64
 	Sign([]byte) []byte
-	Verify([]byte, rsa.PublicKey) bool
-	JoinVerification(Node, Node) error
-	EnterContract(Node, Node) error
-	ExecuteNextContract() error
+	Verify([]byte, []byte, rsa.PublicKey) bool
+	JoinVerification(chan string, chan string) chan bool
+	EnterContract(chan string, chan string) chan bool
+	ExecuteNextContract()
 }
