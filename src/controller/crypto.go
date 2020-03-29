@@ -9,7 +9,7 @@ import (
 )
 
 type RsaNode struct {
-	secretKey rsa.PrivateKey
+	secretKey *rsa.PrivateKey
 }
 
 func (rn RsaNode) Encrypt(msg []byte) []byte {
@@ -27,7 +27,7 @@ func (rn RsaNode) Encrypt(msg []byte) []byte {
 func (rn RsaNode) Decrypt(cipherTxt []byte) []byte {
 	privKey := rn.secretKey
 
-	msg, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, &privKey, cipherTxt, []byte{})
+	msg, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, privKey, cipherTxt, []byte{})
 	if err != nil {
 		log.Print(err)
 		return []byte{}
@@ -41,7 +41,7 @@ func (rn RsaNode) Sign(data []byte) []byte {
 	hashedArray := sha256.Sum256(data)
 	hashedSlice := hashedArray[:]
 
-	sign, err := rsa.SignPKCS1v15(rand.Reader, &privKey, crypto.SHA256, hashedSlice)
+	sign, err := rsa.SignPKCS1v15(rand.Reader, privKey, crypto.SHA256, hashedSlice)
 	if err != nil {
 		log.Print(err)
 		return []byte{}

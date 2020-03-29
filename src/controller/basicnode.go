@@ -1,5 +1,15 @@
 package controller
 
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"encoding/base64"
+	"log"
+	mrand "math/rand"
+	"time"
+)
+
 type BasicNode struct {
 	RsaNode
 	id             string
@@ -8,6 +18,36 @@ type BasicNode struct {
 	tokens         float64
 	contracts      []Contract
 	activeContract *Contract
+}
+
+func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64, contracts []Contract, wds chan string) BasicNode {
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk, contracts: contracts, wds: wds, activeContract: nil}
+	bn.conn = make(chan string)
+	return bn
+}
+
+func NewRandomBasicNode(contracts []Contract, wds chan string) BasicNode {
+	// Generate random key
+	sk, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Generate Id from key
+	pk := (sk.Public()).(*rsa.PublicKey)
+	crypt, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pk, []byte("identification"), []byte{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	nodeId := sha256.Sum256(crypt)
+	id := base64.StdEncoding.EncodeToString(nodeId[:])
+
+	// Generate random token count
+	mrand.Seed(time.Now().UnixNano())
+	tokens := float64(mrand.Intn(10)) + mrand.Float64()
+
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens, contracts: contracts, wds: wds, activeContract: nil}
+	return bn
 }
 
 func (bn BasicNode) Id() string {
