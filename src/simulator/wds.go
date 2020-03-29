@@ -5,7 +5,7 @@ type WDS interface {
 	Run() chan bool
 	Conn() chan string
 	Tokens(string) float64
-	EstablishLink(...WDS) error
+	EstablishLink(...WDS)
 	ActivityLog() map[string]interface{}
 	Assign(Node)
 }

@@ -49,7 +49,11 @@ func (rn RsaNode) Sign(data []byte) []byte {
 	return sign
 }
 
-func (rn RsaNode) Verify(data []byte, sig []byte, pubKey *rsa.PublicKey) bool {
+func (rn RsaNode) PublicKey() *rsa.PublicKey {
+	return rn.secretKey.Public().(*rsa.PublicKey)
+}
+
+func Verify(data []byte, sig []byte, pubKey *rsa.PublicKey) bool {
 	hashedArray := sha256.Sum256(data)
 	hashedSlice := hashedArray[:]
 

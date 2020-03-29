@@ -93,7 +93,7 @@ func activeEnterContract(bn BasicNode, transNode chan string, verfNode chan stri
 	transNode <- serialContract
 
 	signedContract := recvContract(verfNode)
-	snapshot := GenerateSnapshot(signedContract)
+	snapshot := signedContract.Marshal()
 	bn.wds <- snapshot
 }
 

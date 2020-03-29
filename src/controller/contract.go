@@ -2,6 +2,7 @@ package controller
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"log"
 	"strconv"
 	"strings"
@@ -18,7 +19,7 @@ type Contract struct {
 }
 
 func NewEmptyContract() Contract {
-	return Contract{}
+	return Contract{transactions: make(map[string]float64), signatures: make(map[string]string)}
 }
 
 func NewContract(id string, act int, trans map[string]float64) Contract {
@@ -27,7 +28,7 @@ func NewContract(id string, act int, trans map[string]float64) Contract {
 		transMap = make(map[string]float64)
 	}
 
-	contract := Contract{id: id, action: act, transactions: transMap}
+	contract := Contract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
 	return contract
 }
 
@@ -35,14 +36,19 @@ func (c Contract) GetAmount(id string) float64 {
 	return c.transactions[id]
 }
 
+func (c Contract) GetSignatures() map[string]string {
+	return c.signatures
+}
+
 func (c Contract) AddTransaction(id string, amount float64) {
 	c.transactions[id] = amount
 }
 
-func (c Contract) SignContract(n simulator.Node) {
+func (c *Contract) SignContract(n simulator.Node) {
 	hash := []byte(c.hashTransaction())
-	signature := string(n.Sign(hash))
-	c.signatures[n.Id()] = signature
+	signature := n.Sign(hash)
+	encodedSignature := base64.StdEncoding.EncodeToString(signature)
+	c.signatures[n.Id()] = encodedSignature
 }
 
 func (c Contract) marshalTransaction() string {
@@ -57,7 +63,7 @@ func (c Contract) marshalTransaction() string {
 func (c Contract) marshalSignatures() string {
 	serial := ""
 	for nodeId, signature := range c.signatures {
-		serial += "," + nodeId + " : " + signature
+		serial += "," + nodeId + ":" + signature
 	}
 	if len(serial) > 0 {
 		serial = serial[1:]
@@ -109,6 +115,8 @@ func (c *Contract) Unmarshal(serial string) {
 	c.signatures = make(map[string]string)
 	for ; i < len(fields); i++ {
 		pair := strings.Split(fields[i], ":")
-		c.signatures[pair[0]] = pair[1]
+		if len(pair) > 1 {
+			c.signatures[pair[0]] = pair[1]
+		}
 	}
 }
