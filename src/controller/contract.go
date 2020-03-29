@@ -59,12 +59,10 @@ func (c Contract) marshalSignatures() string {
 	for nodeId, signature := range c.signatures {
 		serial += "," + nodeId + " : " + signature
 	}
-	serial = serial[1:]
+	if len(serial) > 0 {
+		serial = serial[1:]
+	}
 	return serial
-}
-
-func (c Contract) AddSignature(id string, sign string) {
-	c.signatures[id] = sign
 }
 
 func (c Contract) hashTransaction() string {
