@@ -74,7 +74,11 @@ func (c Contract) hashTransaction() string {
 func (c Contract) Marshal() string {
 	transactionSerial := c.marshalTransaction()
 	snapshotSerial := c.marshalSignatures()
-	serial := transactionSerial + ",snap," + snapshotSerial
+
+	serial := transactionSerial + ",snap"
+	if len(snapshotSerial) > 0 {
+		serial += "," + snapshotSerial
+	}
 
 	return serial
 }
