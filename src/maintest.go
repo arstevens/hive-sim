@@ -24,6 +24,6 @@ func ContractTest() {
 	fmt.Println(serial)
 	var c2 controller.Contract
 	c2.Unmarshal(serial)
-	fmt.Println(c2.GetAmount("node1"), ":", c2.GetAmount("node2"))
+	fmt.Println(c2.Marshal())
 
 }

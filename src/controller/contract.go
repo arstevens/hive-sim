@@ -83,7 +83,7 @@ func (c Contract) Marshal() string {
 	return serial
 }
 
-func (c Contract) Unmarshal(serial string) {
+func (c *Contract) Unmarshal(serial string) {
 	fields := strings.Split(serial, ",")
 	c.id = fields[0]
 	action, err := strconv.ParseInt(fields[1], 10, 32)
