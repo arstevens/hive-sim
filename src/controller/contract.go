@@ -104,6 +104,7 @@ func (c Contract) Unmarshal(serial string) {
 
 		c.transactions[partyId] = amount
 	}
+	i++
 
 	c.signatures = make(map[string]string)
 	for ; i < len(fields); i++ {
