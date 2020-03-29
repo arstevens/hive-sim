@@ -39,12 +39,13 @@ func recvContract(in chan string) Contract {
 	return contract
 }
 
-func (bn BasicNode) EnterContract(transNode chan string, verfNode chan string) {
+func (bn BasicNode) EnterContract(transNode chan string, verfNode chan string) chan bool {
 	if bn.activeContract != nil {
 		activeEnterContract(bn, transNode, verfNode)
-		return
+		return nil
 	}
 	inactiveEnterContract(bn, transNode, verfNode)
+	return nil
 }
 
 func activeEnterContract(bn BasicNode, transNode chan string, verfNode chan string) {
@@ -72,8 +73,9 @@ func inactiveEnterContract(bn BasicNode, transNode chan string, verfNode chan st
 }
 
 // Simply signs contract and passes it along
-func (bn BasicNode) JoinVerification(leftNode chan string, rightNode chan string) {
+func (bn BasicNode) JoinVerification(leftNode chan string, rightNode chan string) chan bool {
 	contract := recvContract(leftNode)
 	contract.SignContract(bn)
 	rightNode <- contract.Marshal()
+	return nil
 }
