@@ -7,7 +7,7 @@ type BasicNode struct {
 	conn           chan string
 	tokens         float64
 	contracts      []Contract
-	activeContract Contract
+	activeContract *Contract
 }
 
 func (bn BasicNode) Id() string {
@@ -29,7 +29,7 @@ func (bn BasicNode) ExecuteNextContract() {
 
 	serialContract := nextContract.Marshal()
 	bn.wds <- serialContract
-	bn.activeContract = nextContract
+	bn.activeContract = &nextContract
 }
 
 func recvContract(in chan string) Contract {
@@ -41,9 +41,19 @@ func recvContract(in chan string) Contract {
 
 func (bn BasicNode) EnterContract(transNode chan string, verfNode chan string) {
 	if bn.activeContract != nil {
+		activeEnterContract(bn, transNode, verfNode)
+		return
 	}
-
 	inactiveEnterContract(bn, transNode, verfNode)
+}
+
+func activeEnterContract(bn BasicNode, transNode chan string, verfNode chan string) {
+	serialContract := bn.activeContract.Marshal()
+	transNode <- serialContract
+
+	signedContract := recvContract(verfNode)
+	snapshot := GenerateSnapshot(signedContract)
+	bn.wds <- snapshot
 }
 
 func inactiveEnterContract(bn BasicNode, transNode chan string, verfNode chan string) {
