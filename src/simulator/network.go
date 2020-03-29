@@ -1,7 +1,5 @@
 package simulator
 
-import "log"
-
 type HiveNet struct {
 	servers []WDS
 }
@@ -22,11 +20,9 @@ func (hn HiveNet) AddWDS(s WDS) {
 	netServers := len(hn.servers)
 	if netServers > 0 {
 		if netServers == 1 {
-			err := s.EstablishLink(hn.servers[0])
-			log.Fatal(err)
+			s.EstablishLink(hn.servers[0])
 		} else {
-			err := s.EstablishLink(hn.servers[0], hn.servers[netServers-1])
-			log.Fatal(err)
+			s.EstablishLink(hn.servers[0], hn.servers[netServers-1])
 		}
 	}
 	hn.servers = append(hn.servers, s)
