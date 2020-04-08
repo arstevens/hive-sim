@@ -10,7 +10,7 @@ import (
 	"github.com/arstevens/hive-sim/src/simulator"
 )
 
-type Contract struct {
+type BasicContract struct {
 	id              string
 	action          int
 	transactions    map[string]float64
@@ -18,48 +18,48 @@ type Contract struct {
 	signatures      map[string]string
 }
 
-func NewEmptyContract() Contract {
-	return Contract{transactions: make(map[string]float64), signatures: make(map[string]string)}
+func NewEmptyBasicContract() BasicContract {
+	return BasicContract{transactions: make(map[string]float64), signatures: make(map[string]string)}
 }
 
-func NewContract(id string, act int, trans map[string]float64) Contract {
+func NewBasicContract(id string, act int, trans map[string]float64) BasicContract {
 	transMap := trans
 	if transMap == nil {
 		transMap = make(map[string]float64)
 	}
 
-	contract := Contract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
+	contract := BasicContract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
 	return contract
 }
 
-func (c Contract) GetAmount(id string) float64 {
+func (c BasicContract) GetAmount(id string) float64 {
 	return c.transactions[id]
 }
 
-func (c Contract) GetSignatures() map[string]string {
+func (c BasicContract) GetSignatures() map[string]string {
 	return c.signatures
 }
 
-func (c Contract) GetTransactions() map[string]float64 {
+func (c BasicContract) GetTransactions() map[string]float64 {
 	return c.transactions
 }
 
-func (c Contract) AddTransaction(id string, amount float64) {
+func (c BasicContract) AddTransaction(id string, amount float64) {
 	c.transactions[id] = amount
 }
 
-func (c Contract) DeleteTransaction(id string) {
+func (c BasicContract) DeleteTransaction(id string) {
 	delete(c.transactions, id)
 }
 
-func (c *Contract) SignContract(n simulator.Node) {
+func (c *BasicContract) SignContract(n simulator.Node) {
 	hash := []byte(c.hashTransaction())
 	signature := n.Sign(hash)
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	c.signatures[n.Id()] = encodedSignature
 }
 
-func (c Contract) marshalTransaction() string {
+func (c BasicContract) marshalTransaction() string {
 	serial := c.id + "," + strconv.Itoa(c.action)
 	for k, v := range c.transactions {
 		pair := k + ":" + strconv.FormatFloat(v, 'E', -1, 64)
@@ -68,7 +68,7 @@ func (c Contract) marshalTransaction() string {
 	return serial
 }
 
-func (c Contract) marshalSignatures() string {
+func (c BasicContract) marshalSignatures() string {
 	serial := ""
 	for nodeId, signature := range c.signatures {
 		serial += "," + nodeId + ":" + signature
@@ -79,13 +79,13 @@ func (c Contract) marshalSignatures() string {
 	return serial
 }
 
-func (c Contract) hashTransaction() string {
+func (c BasicContract) hashTransaction() string {
 	serial := c.marshalTransaction()
 	checksum := sha256.Sum256([]byte(serial))
 	return string(checksum[:])
 }
 
-func (c Contract) Marshal() string {
+func (c BasicContract) Marshal() string {
 	transactionSerial := c.marshalTransaction()
 	snapshotSerial := c.marshalSignatures()
 
@@ -97,7 +97,7 @@ func (c Contract) Marshal() string {
 	return serial
 }
 
-func (c *Contract) Unmarshal(serial string) {
+func (c *BasicContract) Unmarshal(serial string) {
 	fields := strings.Split(serial, ",")
 	c.id = fields[0]
 	action, err := strconv.ParseInt(fields[1], 10, 32)

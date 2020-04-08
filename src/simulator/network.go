@@ -5,15 +5,21 @@ type HiveNet struct {
 }
 
 func (hn HiveNet) Run() {
+	stopListen := make(chan bool)
+	for _, wds := range hn.servers {
+		wds.StartListener(stopListen)
+	}
+
 	closeChans := make([]chan bool, len(hn.servers))
 	for i, wds := range hn.servers {
-		wdsClose := wds.Run()
+		wdsClose := wds.StartExecution()
 		closeChans[i] = wdsClose
 	}
 
 	for _, finished := range closeChans {
 		<-finished
 	}
+	stopListen <- true
 }
 
 func (hn HiveNet) AddWDS(s WDS) {

@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+const (
+	clientCode   = 0
+	workerCode   = 1
+	verifierCode = 2
+)
+
 type BasicNode struct {
 	RsaNode
 	id     string
@@ -24,7 +30,7 @@ func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64, wds chan string) Ba
 	return bn
 }
 
-func NewRandomBasicNode(contracts []Contract, wds chan string) BasicNode {
+func NewRandomBasicNode(contracts []simulator.Contract, wds chan string) BasicNode {
 	// Generate random key
 	sk, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -60,65 +66,23 @@ func (bn BasicNode) Conn() chan string {
 	return bn.conn
 }
 
-/*
-func (bn BasicNode) ExecuteNextContract() {
-	// Ask WDS to setup the verification subnet
-	if len(bn.contracts) < 1 {
-		return
+func (bn BasicNode) EvaluateContract(contract simulator.Contract, job int) bool {
+	if job == clientCode {
+		return bn.clientEvaluateContract(contract)
+	} else if job == workerCode {
+		return bn.workerEvaluateContract(contract)
 	}
-	nextContract := bn.contracts[0]
-	bn.contracts = bn.contracts[1:]
-
-	serialContract := nextContract.Marshal()
-	bn.wds <- serialContract
-	bn.activeContract = &nextContract
+	return bn.verifierEvaluateContract(contract)
 }
 
-func recvContract(in chan string) Contract {
-	var contract Contract
-	serialContract := <-in
-	contract.Unmarshal(serialContract)
-	return contract
+func (bn BasicNode) clientEvaluateContract(contract simulator.Contract) bool {
+	return contract.GetAmount(bn.Id()) < 0.0
 }
 
-func (bn BasicNode) EnterContract(transNode chan string, verfNode chan string) chan bool {
-	if bn.activeContract != nil {
-		activeEnterContract(bn, transNode, verfNode)
-		return nil
-	}
-	inactiveEnterContract(bn, transNode, verfNode)
-	return nil
+func (bn BasicNode) workerEvaluateContract(contract simulator.Contract) bool {
+	return contract.GetAmount(bn.Id()) > 0.0
 }
 
-func activeEnterContract(bn BasicNode, transNode chan string, verfNode chan string) {
-	serialContract := bn.activeContract.Marshal()
-	transNode <- serialContract
-
-	signedContract := recvContract(verfNode)
-	snapshot := signedContract.Marshal()
-	bn.wds <- snapshot
+func (bn BasicNode) verifierEvaluateContract(contract simulator.Contract) bool {
+	return contract.GetAmount(bn.Id()) > 0.0
 }
-
-func inactiveEnterContract(bn BasicNode, transNode chan string, verfNode chan string) {
-	contract := recvContract(transNode)
-
-	// Verify that you are gaining tokens in the transaction
-	nodeId := bn.Id()
-	if contract.GetAmount(nodeId) > 0.0 {
-		contract.SignContract(bn)
-		verfNode <- contract.Marshal()
-		return
-	}
-
-	// If transaction is bad, kill the subnet
-	verfNode <- "kill"
-}
-
-// Simply signs contract and passes it along
-func (bn BasicNode) JoinVerification(leftNode chan string, rightNode chan string) chan bool {
-	contract := recvContract(leftNode)
-	contract.SignContract(bn)
-	rightNode <- contract.Marshal()
-	return nil
-}
-*/
