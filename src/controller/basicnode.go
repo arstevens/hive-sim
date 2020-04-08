@@ -12,16 +12,14 @@ import (
 
 type BasicNode struct {
 	RsaNode
-	id             string
-	wds            chan string
-	conn           chan string
-	tokens         float64
-	contracts      []Contract
-	activeContract *Contract
+	id     string
+	wds    chan string
+	conn   chan string
+	tokens float64
 }
 
-func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64, contracts []Contract, wds chan string) BasicNode {
-	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk, contracts: contracts, wds: wds, activeContract: nil}
+func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64, wds chan string) BasicNode {
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk, wds: wds}
 	bn.conn = make(chan string)
 	return bn
 }
@@ -46,7 +44,7 @@ func NewRandomBasicNode(contracts []Contract, wds chan string) BasicNode {
 	mrand.Seed(time.Now().UnixNano())
 	tokens := float64(mrand.Intn(10)) + mrand.Float64()
 
-	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens, contracts: contracts, wds: wds, activeContract: nil}
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens, wds: wds}
 	return bn
 }
 
@@ -62,8 +60,12 @@ func (bn BasicNode) Conn() chan string {
 	return bn.conn
 }
 
+/*
 func (bn BasicNode) ExecuteNextContract() {
 	// Ask WDS to setup the verification subnet
+	if len(bn.contracts) < 1 {
+		return
+	}
 	nextContract := bn.contracts[0]
 	bn.contracts = bn.contracts[1:]
 
@@ -119,3 +121,4 @@ func (bn BasicNode) JoinVerification(leftNode chan string, rightNode chan string
 	rightNode <- contract.Marshal()
 	return nil
 }
+*/

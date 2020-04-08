@@ -3,23 +3,24 @@ package controller
 import (
 	"encoding/base64"
 	"log"
+	"math/rand"
 
 	"github.com/arstevens/hive-sim/src/simulator"
 )
 
 type BasicWDS struct {
-	id       string
-	tokens   float64
-	wdsConn  chan string
-	nodeConn chan string
-	inWDS    chan string
-	outWDS   chan string
-	nodes    map[string]simulator.Node
-	tokenMap map[string]float64
+	id        string
+	tokens    float64
+	inWDS     chan string
+	outWDS    chan string
+	contracts []Contract
+	nodes     []simulator.Node
+	tokenMap  map[string]float64
 }
 
 func (bw *BasicWDS) Assign(n simulator.Node) {
-	bw.nodes[n.Id()] = n
+	bw.nodes = append(bw.nodes, n)
+	bw.tokenMap[n.Id()] = n.Tokens()
 }
 
 func (bw BasicWDS) Id() string {
@@ -27,7 +28,7 @@ func (bw BasicWDS) Id() string {
 }
 
 func (bw BasicWDS) Conn() chan string {
-	return bw.wdsConn
+	return bw.inWDS
 }
 
 func (bw BasicWDS) Tokens(id string) float64 {
@@ -41,17 +42,35 @@ func (bw *BasicWDS) EstablishLink(servers ...simulator.WDS) {
 	bw.outWDS = servers[0].Conn()
 }
 
+func (bw *BasicWDS) updateTokenMap(snap Contract) {
+	transaction := snap.GetTransactions()
+	for id, amount := range transaction {
+		bw.tokenMap[id] = bw.tokenMap[id] + amount
+	}
+}
+
 func basicWDSConnListener(bw BasicWDS) {
 	for {
 		select {
 		case rawSnap := <-bw.inWDS:
 			snapshot := NewEmptyContract()
 			snapshot.Unmarshal(rawSnap)
+			if basicVerifySnapshot(snapshot, bw) {
+				bw.updateTokenMap(snapshot)
+				bw.outWDS <- rawSnap
+			}
 		}
 	}
 }
 
 func basicVerifySnapshot(snapshot Contract, bw BasicWDS) bool {
+	transactions := snapshot.GetTransactions()
+	for id, amount := range transactions {
+		if amount > 0.0 && bw.tokenMap[id] < amount {
+			return false
+		}
+	}
+
 	signatures := snapshot.GetSignatures()
 	hash := []byte(snapshot.hashTransaction())
 	for id, signature := range signatures {
@@ -67,4 +86,57 @@ func basicVerifySnapshot(snapshot Contract, bw BasicWDS) bool {
 		}
 	}
 	return true
+}
+
+func basicContractExecutor(bw BasicWDS) {
+	for _, contract := range bw.contracts {
+		subnet := basicSelectNodesForSubnet(bw.nodes)
+
+	}
+}
+
+func basicExecuteContract(nodes []simulator.Node, contract Contract) Contract {
+	client := nodes[0]
+	worker := nodes[1]
+	basicFillContract(client.Id(), worker.Id(), &contract)
+	basicAgreeOnContract(client, worker, &contract)
+	basicVerifyContract(nodes[2:], &contract)
+}
+
+/* Possibly have basic outline for sign checking on each node but allow the condition to
+come from the nodes
+	ex: if client.Evaluate(Contract) { sign }
+*/
+func basicAgreeOnContract(client simulator.Node, worker simulator.Node, contract *Contract) {
+	if contract.GetAmount(client.Id()) < 0.0 {
+		contract.SignContract(worker)
+	}
+
+	if contract.GetAmount(worker.Id()) > 0.0 {
+		contract.SignContract(worker)
+	}
+}
+
+func basicVerifyContract(nodes []simulator.Node, contract *Contract) {
+	for _, node := range nodes {
+		contract.SignContract(node)
+	}
+}
+
+func basicFillContract(clientId string, workerId string, c *Contract) {
+	c.AddTransaction(clientId, c.GetAmount("1"))
+	c.DeleteTransaction("1")
+
+	c.AddTransaction(workerId, c.GetAmount("2"))
+	c.DeleteTransaction("2")
+}
+
+func basicSelectNodesForSubnet(allNodes []simulator.Node) []simulator.Node {
+	nodes := make([]simulator.Node, 8)
+	indices := rand.Perm(8)
+	for i, idx := range indices {
+		nodes[i] = allNodes[idx]
+	}
+
+	return nodes
 }

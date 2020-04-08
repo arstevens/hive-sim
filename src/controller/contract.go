@@ -40,8 +40,16 @@ func (c Contract) GetSignatures() map[string]string {
 	return c.signatures
 }
 
+func (c Contract) GetTransactions() map[string]float64 {
+	return c.transactions
+}
+
 func (c Contract) AddTransaction(id string, amount float64) {
 	c.transactions[id] = amount
+}
+
+func (c Contract) DeleteTransaction(id string) {
+	delete(c.transactions, id)
 }
 
 func (c *Contract) SignContract(n simulator.Node) {

@@ -13,6 +13,7 @@ func TestBasicNode(t *testing.T) {
 	fmt.Println("-------- END OF BASIC NODE TESTING --------")
 }
 
+/*
 func TestContract(t *testing.T) {
 	fmt.Println("\n-------- START OF CONTRACT TESTING --------")
 	bn1 := NewRandomBasicNode(nil, nil)
@@ -33,4 +34,10 @@ func TestContract(t *testing.T) {
 	contract2.Unmarshal(serial)
 	fmt.Println(contract2.Marshal())
 	fmt.Println("-------- END OF CONTRACT TESTING --------")
+}
+*/
+
+func TestGen(t *testing.T) {
+	ints := generateConsecutiveIntegers(0, 50, 20)
+	fmt.Println(ints)
 }
