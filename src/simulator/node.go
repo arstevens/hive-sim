@@ -8,5 +8,5 @@ type Node interface {
 	Tokens() float64
 	Sign([]byte) []byte
 	PublicKey() *rsa.PublicKey
-	EvaluateContract(Contract) bool
+	EvaluateContract(Contract, int) bool
 }

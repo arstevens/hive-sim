@@ -53,7 +53,7 @@ func (c BasicContract) DeleteTransaction(id string) {
 }
 
 func (c *BasicContract) SignContract(n simulator.Node) {
-	hash := []byte(c.hashTransaction())
+	hash := []byte(c.HashTransaction())
 	signature := n.Sign(hash)
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	c.signatures[n.Id()] = encodedSignature
@@ -79,7 +79,7 @@ func (c BasicContract) marshalSignatures() string {
 	return serial
 }
 
-func (c BasicContract) hashTransaction() string {
+func (c BasicContract) HashTransaction() string {
 	serial := c.marshalTransaction()
 	checksum := sha256.Sum256([]byte(serial))
 	return string(checksum[:])

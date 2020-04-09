@@ -5,6 +5,7 @@ type Contract interface {
 	GetSignatures() map[string]string
 	GetTransactions() map[string]float64
 	AddTransaction(string, float64)
+	HashTransaction() string
 	DeleteTransaction(string)
 	SignContract(Node)
 	Marshal() string

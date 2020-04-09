@@ -7,7 +7,10 @@ import (
 	"encoding/base64"
 	"log"
 	mrand "math/rand"
+	"strconv"
 	"time"
+
+	"github.com/arstevens/hive-sim/src/simulator"
 )
 
 const (
@@ -84,5 +87,6 @@ func (bn BasicNode) workerEvaluateContract(contract simulator.Contract) bool {
 }
 
 func (bn BasicNode) verifierEvaluateContract(contract simulator.Contract) bool {
-	return contract.GetAmount(bn.Id()) > 0.0
+	verifierKey := strconv.Itoa(verifierCode)
+	return contract.GetAmount(verifierKey) > 0.0
 }
