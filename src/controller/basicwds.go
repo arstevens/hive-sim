@@ -48,7 +48,7 @@ func NewBasicWDS(id string, tokens float64) simulator.WDS {
 	nodes := make(map[string]simulator.Node)
 	tokenMap := make(map[string]float64)
 
-	return BasicWDS{
+	return &BasicWDS{
 		id:          id,
 		tokens:      tokens,
 		inWDS:       inWDS,
