@@ -9,13 +9,23 @@ import (
 	"github.com/arstevens/hive-sim/src/simulator"
 )
 
+type BasicLog struct {
+	totalTransactions      int
+	successfulTransactions int
+	totalSnapshots         int
+	successfulSnapshots    int
+	wdsTokenLog            map[string]float64
+	nodeTokenLog           map[string]float64
+}
+
 type BasicWDS struct {
 	id          string
 	tokens      float64
 	inWDS       chan string
 	outWDS      chan string
-	nodesMutex  sync.Mutex
-	tokensMutex sync.Mutex
+	nodesMutex  *sync.Mutex
+	tokensMutex *sync.Mutex
+	log         *BasicLog
 	contracts   []simulator.Contract
 	nodes       map[string]simulator.Node
 	tokenMap    map[string]float64
@@ -45,6 +55,17 @@ func (bw BasicWDS) Tokens(id string) float64 {
 	return tokens
 }
 
+func (bw BasicWDS) GetLog() interface{} {
+	log := bw.log
+	log.wdsTokenLog = bw.tokenMap
+	log.nodeTokenLog = make(map[string]float64)
+	for nid, node := range bw.nodes {
+		log.nodeTokenLog[nid] = node.Tokens()
+	}
+
+	return log
+}
+
 func (bw BasicWDS) getNode(id string) simulator.Node {
 	bw.nodesMutex.Lock()
 	node := bw.nodes[id]
@@ -54,7 +75,8 @@ func (bw BasicWDS) getNode(id string) simulator.Node {
 }
 
 func (bw *BasicWDS) EstablishLink(servers ...simulator.WDS) {
-	bw.outWDS = servers[0].Conn()
+	bw.inWDS = servers[0].Conn()
+	bw.outWDS = servers[1].Conn()
 }
 
 func (bw *BasicWDS) updateTokenMap(snap simulator.Contract) {
@@ -82,8 +104,10 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 			snapshot.Unmarshal(rawSnap)
 			if basicVerifySnapshot(snapshot, bw) {
 				bw.updateTokenMap(snapshot)
+				bw.log.successfulSnapshots++
 				bw.outWDS <- rawSnap
 			}
+			bw.log.totalSnapshots++
 		case <-close:
 			return
 		}
@@ -117,11 +141,14 @@ func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 
 func basicContractExecutor(bw *BasicWDS, done chan bool) {
 	for _, contract := range bw.contracts {
-		subnet := basicSelectNodesForSubnet(bw.nodes, &bw.nodesMutex)
+		subnet := basicSelectNodesForSubnet(bw.nodes, bw.nodesMutex)
 		snapshot := basicExecuteContract(subnet, contract)
 		if basicVerifySnapshot(snapshot, bw) {
+			bw.updateTokenMap(snapshot)
+			bw.log.successfulTransactions++
 			bw.outWDS <- snapshot.Marshal()
 		}
+		bw.log.totalTransactions++
 	}
 	done <- true
 }
@@ -130,32 +157,35 @@ func basicExecuteContract(nodes []simulator.Node, contract simulator.Contract) s
 	client := nodes[0]
 	worker := nodes[1]
 	filledContract := basicFillContract(client.Id(), worker.Id(), contract)
-	basicAgreeOnContract(client, worker, &contract)
-	basicVerifyContract(nodes[2:], &contract)
+	agreedContract := basicAgreeOnContract(client, worker, filledContract)
+	verifiedContract := basicVerifyContract(nodes[2:], agreedContract)
 
-	return contract
+	return verifiedContract
 }
 
 /* Possibly have basic outline for sign checking on each node but allow the condition to
 come from the nodes
 	ex: if client.Evaluate(Contract) { sign }
 */
-func basicAgreeOnContract(client simulator.Node, worker simulator.Node, contract *simulator.Contract) {
+func basicAgreeOnContract(client simulator.Node, worker simulator.Node, contract simulator.Contract) simulator.Contract {
 	if worker.EvaluateContract(contract, workerCode) {
-		(*contract).SignContract(worker)
+		contract.SignContract(worker)
 	}
 
 	if client.EvaluateContract(contract, clientCode) {
-		(*contract).SignContract(client)
+		contract.SignContract(client)
 	}
+
+	return contract
 }
 
-func basicVerifyContract(nodes []simulator.Node, contract *simulator.Contract) {
+func basicVerifyContract(nodes []simulator.Node, contract simulator.Contract) simulator.Contract {
 	for _, node := range nodes {
 		if node.EvaluateContract(contract, verifierCode) {
-			(*contract).SignContract(node)
+			contract.SignContract(node)
 		}
 	}
+	return contract
 }
 
 func basicFillContract(clientId string, workerId string, c simulator.Contract) simulator.Contract {
@@ -174,7 +204,7 @@ func basicSelectNodesForSubnet(allNodes map[string]simulator.Node, lock *sync.Mu
 	nodes := make([]simulator.Node, 8)
 	i := 0
 	lock.Lock()
-	for id, node := range allNodes {
+	for _, node := range allNodes {
 		if i > 7 {
 			break
 		}

@@ -22,18 +22,15 @@ const (
 type BasicNode struct {
 	RsaNode
 	id     string
-	wds    chan string
-	conn   chan string
 	tokens float64
 }
 
-func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64, wds chan string) BasicNode {
-	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk, wds: wds}
-	bn.conn = make(chan string)
+func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64) BasicNode {
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk}
 	return bn
 }
 
-func NewRandomBasicNode(contracts []simulator.Contract, wds chan string) BasicNode {
+func NewRandomBasicNode() BasicNode {
 	// Generate random key
 	sk, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -53,7 +50,7 @@ func NewRandomBasicNode(contracts []simulator.Contract, wds chan string) BasicNo
 	mrand.Seed(time.Now().UnixNano())
 	tokens := float64(mrand.Intn(10)) + mrand.Float64()
 
-	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens, wds: wds}
+	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens}
 	return bn
 }
 
@@ -63,10 +60,6 @@ func (bn BasicNode) Id() string {
 
 func (bn BasicNode) Tokens() float64 {
 	return bn.tokens
-}
-
-func (bn BasicNode) Conn() chan string {
-	return bn.conn
 }
 
 func (bn BasicNode) EvaluateContract(contract simulator.Contract, job int) bool {

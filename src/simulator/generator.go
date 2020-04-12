@@ -3,7 +3,7 @@ package simulator
 type StateGenerator interface {
 	NextNode() Node
 	NextWDS() WDS
-	NodeLefts() int
+	NodeLeft() int
 	WDSLeft() int
 	GetNodeDistribution() []int
 }
