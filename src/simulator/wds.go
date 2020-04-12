@@ -8,5 +8,6 @@ type WDS interface {
 	Tokens(string) float64
 	EstablishLink(...WDS)
 	GetLog() interface{}
-	Assign(Node)
+	AssignNode(Node)
+	AssignContract(Contract)
 }

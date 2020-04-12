@@ -1,10 +1,15 @@
 package controller
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
 	"encoding/base64"
 	"log"
+	mrand "math/rand"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/arstevens/hive-sim/src/simulator"
 )
@@ -31,9 +36,62 @@ type BasicWDS struct {
 	tokenMap    map[string]float64
 }
 
-func (bw *BasicWDS) Assign(n simulator.Node) {
+func NewBasicWDS(id string, tokens float64) simulator.WDS {
+	inWDS := make(chan string)
+	var nodesMutex sync.Mutex
+	var tokensMutex sync.Mutex
+	log := BasicLog{
+		wdsTokenLog:  make(map[string]float64),
+		nodeTokenLog: make(map[string]float64),
+	}
+	contracts := make([]simulator.Contract, 0)
+	nodes := make(map[string]simulator.Node)
+	tokenMap := make(map[string]float64)
+
+	return BasicWDS{
+		id:          id,
+		tokens:      tokens,
+		inWDS:       inWDS,
+		outWDS:      nil,
+		nodesMutex:  &nodesMutex,
+		tokensMutex: &tokensMutex,
+		log:         &log,
+		contracts:   contracts,
+		nodes:       nodes,
+		tokenMap:    tokenMap,
+	}
+}
+
+func NewRandomBasicWDS() simulator.WDS {
+	// Generate random key
+	sk, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Generate Id from key
+	pk := (sk.Public()).(*rsa.PublicKey)
+	crypt, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pk, []byte("identification"), []byte{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	nodeId := sha256.Sum256(crypt)
+	id := base64.StdEncoding.EncodeToString(nodeId[:])
+
+	// Generate random token count
+	mrand.Seed(time.Now().UnixNano())
+	tokens := float64(mrand.Intn(10)) + mrand.Float64()
+
+	return NewBasicWDS(id, tokens)
+}
+
+func (bw *BasicWDS) AssignNode(n simulator.Node) {
 	bw.nodes[n.Id()] = n
 	bw.tokenMap[n.Id()] = n.Tokens()
+}
+
+func (bw *BasicWDS) AssignContract(c simulator.Contract) {
+	bw.contracts = append(bw.contracts, c)
 }
 
 func (bw BasicWDS) Id() string {
