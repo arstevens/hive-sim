@@ -9,7 +9,7 @@ func AllocateResources(hn HiveNet, gen StateGenerator) {
 		wds := gen.NextWDS()
 		for j := 0; j < serverLoad; j++ {
 			newNode := gen.NextNode()
-			wds.Assign(newNode)
+			wds.AssignNode(newNode)
 		}
 		servers[i] = wds
 	}
