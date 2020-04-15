@@ -175,7 +175,7 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	transactions := snapshot.GetTransactions()
 	for id, amount := range transactions {
-		if amount > 0.0 && bw.Tokens(id) < amount {
+		if amount > 0.0 && bw.GetTokens(id) < amount {
 			return false
 		}
 	}
@@ -189,7 +189,7 @@ func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 		}
 
 		nodePk := bw.getNode(id).PublicKey()
-		valid := Verify(hash, decodedSignature, nodePk)
+		valid := RsaVerify(hash, decodedSignature, nodePk)
 		if !valid {
 			return false
 		}
