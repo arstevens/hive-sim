@@ -133,8 +133,7 @@ func (bw BasicWDS) getNode(id string) simulator.Node {
 }
 
 func (bw *BasicWDS) EstablishLink(servers ...simulator.WDS) {
-	bw.inWDS = servers[0].Conn()
-	bw.outWDS = servers[1].Conn()
+	bw.outWDS = servers[0].Conn()
 }
 
 func (bw *BasicWDS) updateTokenMap(snap simulator.Contract) {

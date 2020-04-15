@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+
+	"github.com/arstevens/hive-sim/src/simulator"
 )
 
 func TestBasicNode(t *testing.T) {
@@ -28,8 +30,26 @@ func TestBasicNode(t *testing.T) {
 
 func TestBasicWDS(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC WDS TESTING --------")
-	wds := NewBasicWDS("wds1", 20)
-	fmt.Println(wds.GetId())
+	wdsSize := 3
+	nodesPerWds := 5
+
+	// Generate WDSs and establish cyclic network
+	wds := make([]simulator.WDS, wdsSize)
+	wds[0] = NewRandomBasicWDS()
+	for i := 1; i < wdsSize; i++ {
+		wds[i] = NewRandomBasicWDS()
+		wds[i-1].EstablishLink(wds[i])
+	}
+	wds[wdsSize-1].EstablishLink(wds[0])
+
+	// Generate Nodes and assign to WDSs
+	for _, server := range wds {
+		for i := 0; i < nodesPerWds; i++ {
+			node := NewRandomBasicNode()
+			server.AssignNode(node)
+		}
+	}
+
 	fmt.Println("-------- END OF BASIC WDS TESTING --------")
 }
 

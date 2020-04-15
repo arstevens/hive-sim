@@ -4,11 +4,15 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"log"
+	mrand "math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/arstevens/hive-sim/src/simulator"
 )
+
+var totalContracts = 0
 
 type BasicContract struct {
 	id              string
@@ -26,6 +30,19 @@ func NewBasicContract(id string, act int, trans map[string]float64) BasicContrac
 
 	contract := BasicContract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
 	return contract
+}
+
+func NewRandomBasicContract(transLimit int) BasicContract {
+	transMap := make(map[string]float64)
+
+	mrand.Seed(time.Now().UnixNano())
+	transVal := float64(mrand.Intn(transLimit-1)) + mrand.Float64()
+	transMap["A"] = transVal
+	transMap["B"] = -transVal
+	transId := "T" + strconv.Itoa(totalContracts)
+	totalContracts++
+
+	return NewBasicContract(transId, 0, transMap)
 }
 
 func (c BasicContract) GetAmount(id string) float64 {

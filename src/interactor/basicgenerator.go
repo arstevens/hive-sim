@@ -55,7 +55,7 @@ func (bg BasicGenerator) NextWDS() simulator.WDS {
 	}
 
 	for i := 0; i < contractCount; i++ {
-		contract := createRandomBasicContract(1)
+		contract := controller.NewRandomBasicContract(1)
 		wds.AssignContract(&contract)
 	}
 
