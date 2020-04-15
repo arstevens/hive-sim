@@ -8,6 +8,7 @@ import (
 func TestBasicNode(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC NODE TESTING --------")
 	bn := NewRandomBasicNode()
+
 	id := bn.Id()
 	fmt.Println(id)
 	fmt.Println("-------- END OF BASIC NODE TESTING --------")

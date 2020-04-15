@@ -102,7 +102,7 @@ func (bw BasicWDS) Conn() chan string {
 	return bw.inWDS
 }
 
-func (bw BasicWDS) Tokens(id string) float64 {
+func (bw BasicWDS) GetTokens(id string) float64 {
 	if id == "" {
 		return bw.tokens
 	}
