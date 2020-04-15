@@ -45,8 +45,8 @@ func TestContract(t *testing.T) {
 	transMap[bn2.GetId()] = -0.01
 
 	contract := NewBasicContract(id, action, transMap)
-	contract.SignContract(&bn1)
-	contract.SignContract(&bn2)
+	contract.SignContract(bn1)
+	contract.SignContract(bn2)
 	serial := contract.Marshal()
 	fmt.Println(contract.Marshal())
 	var contract2 BasicContract

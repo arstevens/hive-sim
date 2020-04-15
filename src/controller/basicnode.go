@@ -25,12 +25,12 @@ type BasicNode struct {
 	tokens float64
 }
 
-func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64) BasicNode {
+func NewBasicNode(id string, sk *rsa.PrivateKey, tk float64) *BasicNode {
 	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tk}
-	return bn
+	return &bn
 }
 
-func NewRandomBasicNode() BasicNode {
+func NewRandomBasicNode() *BasicNode {
 	// Generate random key
 	sk, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -51,7 +51,7 @@ func NewRandomBasicNode() BasicNode {
 	tokens := float64(mrand.Intn(10)) + mrand.Float64()
 
 	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens}
-	return bn
+	return &bn
 }
 
 func (bn BasicNode) GetId() string {
