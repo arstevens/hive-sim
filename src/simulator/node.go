@@ -3,8 +3,9 @@ package simulator
 import "crypto/rsa"
 
 type Node interface {
-	Id() string
-	Tokens() float64
+	GetId() string
+	GetTokens() float64
+	SetTokens(float64)
 	Sign([]byte) []byte
 	PublicKey() *rsa.PublicKey
 	EvaluateContract(Contract, int) bool

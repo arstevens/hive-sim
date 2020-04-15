@@ -54,12 +54,16 @@ func NewRandomBasicNode() BasicNode {
 	return bn
 }
 
-func (bn BasicNode) Id() string {
+func (bn BasicNode) GetId() string {
 	return bn.id
 }
 
-func (bn BasicNode) Tokens() float64 {
+func (bn BasicNode) GetTokens() float64 {
 	return bn.tokens
+}
+
+func (bn *BasicNode) SetTokens(value float64) {
+	bn.tokens = value
 }
 
 func (bn BasicNode) EvaluateContract(contract simulator.Contract, job int) bool {
@@ -72,11 +76,11 @@ func (bn BasicNode) EvaluateContract(contract simulator.Contract, job int) bool 
 }
 
 func (bn BasicNode) clientEvaluateContract(contract simulator.Contract) bool {
-	return contract.GetAmount(bn.Id()) < 0.0
+	return contract.GetAmount(bn.GetId()) < 0.0
 }
 
 func (bn BasicNode) workerEvaluateContract(contract simulator.Contract) bool {
-	return contract.GetAmount(bn.Id()) > 0.0
+	return contract.GetAmount(bn.GetId()) > 0.0
 }
 
 func (bn BasicNode) verifierEvaluateContract(contract simulator.Contract) bool {

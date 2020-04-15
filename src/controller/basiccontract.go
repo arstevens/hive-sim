@@ -18,10 +18,6 @@ type BasicContract struct {
 	signatures      map[string]string
 }
 
-func NewEmptyBasicContract() BasicContract {
-	return BasicContract{transactions: make(map[string]float64), signatures: make(map[string]string)}
-}
-
 func NewBasicContract(id string, act int, trans map[string]float64) BasicContract {
 	transMap := trans
 	if transMap == nil {
@@ -44,11 +40,11 @@ func (c BasicContract) GetTransactions() map[string]float64 {
 	return c.transactions
 }
 
-func (c BasicContract) AddTransaction(id string, amount float64) {
+func (c *BasicContract) AddTransaction(id string, amount float64) {
 	c.transactions[id] = amount
 }
 
-func (c BasicContract) DeleteTransaction(id string) {
+func (c *BasicContract) DeleteTransaction(id string) {
 	delete(c.transactions, id)
 }
 

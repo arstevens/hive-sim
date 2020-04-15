@@ -13,11 +13,10 @@ func TestBasicNode(t *testing.T) {
 	fmt.Println("-------- END OF BASIC NODE TESTING --------")
 }
 
-/*
 func TestContract(t *testing.T) {
 	fmt.Println("\n-------- START OF CONTRACT TESTING --------")
-	bn1 := NewRandomBasicNode(nil, nil)
-	bn2 := NewRandomBasicNode(nil, nil)
+	bn1 := NewRandomBasicNode()
+	bn2 := NewRandomBasicNode()
 
 	id := "transaction_1"
 	action := 0 // simple token transfer
@@ -25,14 +24,13 @@ func TestContract(t *testing.T) {
 	transMap[bn1.Id()] = 0.01
 	transMap[bn2.Id()] = -0.01
 
-	contract := NewContract(id, action, transMap)
+	contract := NewBasicContract(id, action, transMap)
 	contract.SignContract(bn1)
 	contract.SignContract(bn2)
 	serial := contract.Marshal()
 	fmt.Println(contract.Marshal())
-	contract2 := NewEmptyContract()
+	var contract2 BasicContract
 	contract2.Unmarshal(serial)
 	fmt.Println(contract2.Marshal())
 	fmt.Println("-------- END OF CONTRACT TESTING --------")
 }
-*/
