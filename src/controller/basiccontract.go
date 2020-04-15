@@ -52,7 +52,7 @@ func (c *BasicContract) SignContract(n simulator.Node) {
 	hash := []byte(c.HashTransaction())
 	signature := n.Sign(hash)
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
-	c.signatures[n.Id()] = encodedSignature
+	c.signatures[n.GetId()] = encodedSignature
 }
 
 func (c BasicContract) marshalTransaction() string {

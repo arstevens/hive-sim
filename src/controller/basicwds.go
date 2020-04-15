@@ -86,15 +86,15 @@ func NewRandomBasicWDS() simulator.WDS {
 }
 
 func (bw *BasicWDS) AssignNode(n simulator.Node) {
-	bw.nodes[n.Id()] = n
-	bw.tokenMap[n.Id()] = n.Tokens()
+	bw.nodes[n.GetId()] = n
+	bw.tokenMap[n.GetId()] = n.GetTokens()
 }
 
 func (bw *BasicWDS) AssignContract(c simulator.Contract) {
 	bw.contracts = append(bw.contracts, c)
 }
 
-func (bw BasicWDS) Id() string {
+func (bw BasicWDS) GetId() string {
 	return bw.id
 }
 
@@ -118,7 +118,7 @@ func (bw BasicWDS) GetLog() interface{} {
 	log.wdsTokenLog = bw.tokenMap
 	log.nodeTokenLog = make(map[string]float64)
 	for nid, node := range bw.nodes {
-		log.nodeTokenLog[nid] = node.Tokens()
+		log.nodeTokenLog[nid] = node.GetTokens()
 	}
 
 	return log
@@ -214,7 +214,7 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 func basicExecuteContract(nodes []simulator.Node, contract simulator.Contract) simulator.Contract {
 	client := nodes[0]
 	worker := nodes[1]
-	filledContract := basicFillContract(client.Id(), worker.Id(), contract)
+	filledContract := basicFillContract(client.GetId(), worker.GetId(), contract)
 	agreedContract := basicAgreeOnContract(client, worker, filledContract)
 	verifiedContract := basicVerifyContract(nodes[2:], agreedContract)
 
