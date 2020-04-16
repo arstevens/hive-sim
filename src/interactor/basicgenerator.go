@@ -2,14 +2,11 @@ package interactor
 
 import (
 	mrand "math/rand"
-	"strconv"
 	"time"
 
 	"github.com/arstevens/hive-sim/src/controller"
 	"github.com/arstevens/hive-sim/src/simulator"
 )
-
-var totalContracts = 0
 
 const (
 	RANDOM_CGEN = 0
@@ -64,17 +61,4 @@ func (bg BasicGenerator) NextWDS() simulator.WDS {
 
 func (bg BasicGenerator) GetNodeDistribution() []int {
 	return bg.nodeDistribution
-}
-
-func createRandomBasicContract(transLimit int) controller.BasicContract {
-	transMap := make(map[string]float64)
-
-	mrand.Seed(time.Now().UnixNano())
-	transVal := float64(mrand.Intn(transLimit-1)) + mrand.Float64()
-	transMap["A"] = transVal
-	transMap["B"] = -transVal
-	transId := "T" + strconv.Itoa(totalContracts)
-	totalContracts++
-
-	return controller.NewBasicContract(transId, 0, transMap)
 }

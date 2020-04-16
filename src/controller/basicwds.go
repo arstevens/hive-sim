@@ -5,9 +5,10 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"log"
+	"math"
 	mrand "math/rand"
-	"strconv"
 	"sync"
 	"time"
 
@@ -15,12 +16,25 @@ import (
 )
 
 type BasicLog struct {
+	wdsId                  string
 	totalTransactions      int
 	successfulTransactions int
 	totalSnapshots         int
 	successfulSnapshots    int
 	wdsTokenLog            map[string]float64
 	nodeTokenLog           map[string]float64
+}
+
+func (bl BasicLog) Print() {
+	fmt.Printf(`Id: %s {
+		Total Transactions: %d,
+		Successful Transactions: %d,
+		Total Snapshots: %d,
+		Successful Snapshot: %d,
+		}`, bl.wdsId, bl.totalTransactions,
+		bl.successfulTransactions, bl.totalSnapshots,
+		bl.successfulSnapshots)
+	fmt.Println()
 }
 
 type BasicWDS struct {
@@ -115,6 +129,7 @@ func (bw BasicWDS) GetTokens(id string) float64 {
 
 func (bw BasicWDS) GetLog() interface{} {
 	log := bw.log
+	log.wdsId = bw.id
 	log.wdsTokenLog = bw.tokenMap
 	log.nodeTokenLog = make(map[string]float64)
 	for nid, node := range bw.nodes {
@@ -157,10 +172,14 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 	for {
 		select {
 		case rawSnap := <-bw.inWDS:
-			var snapshot simulator.Contract
+			var snapshot BasicContract
 			snapshot.Unmarshal(rawSnap)
-			if basicVerifySnapshot(snapshot, bw) {
-				bw.updateTokenMap(snapshot)
+			/* WDS doesn't contain node token map entries for
+			foreign nodes so those initial values must be sent along with
+			contract or another way needs to be found out to fix this authentication
+			issue */
+			if basicVerifySnapshot(&snapshot, bw) {
+				bw.updateTokenMap(&snapshot)
 				bw.log.successfulSnapshots++
 				bw.outWDS <- rawSnap
 			}
@@ -174,7 +193,7 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	transactions := snapshot.GetTransactions()
 	for id, amount := range transactions {
-		if amount > 0.0 && bw.GetTokens(id) < amount {
+		if amount < 0.0 && bw.GetTokens(id) < math.Abs(amount) {
 			return false
 		}
 	}
@@ -246,11 +265,9 @@ func basicVerifyContract(nodes []simulator.Node, contract simulator.Contract) si
 }
 
 func basicFillContract(clientId string, workerId string, c simulator.Contract) simulator.Contract {
-	clientKey := strconv.Itoa(clientCode)
 	c.AddTransaction(clientId, c.GetAmount(clientKey))
 	c.DeleteTransaction(clientKey)
 
-	workerKey := strconv.Itoa(workerCode)
 	c.AddTransaction(workerId, c.GetAmount(workerKey))
 	c.DeleteTransaction(workerKey)
 

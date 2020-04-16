@@ -62,5 +62,6 @@ func RsaVerify(data []byte, sig []byte, pubKey *rsa.PublicKey) bool {
 		log.Print(err)
 		return false
 	}
+
 	return true
 }

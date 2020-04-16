@@ -49,7 +49,7 @@ func NewRandomBasicNode() *BasicNode {
 
 	// Generate random token count
 	mrand.Seed(time.Now().UnixNano())
-	tokens := float64(mrand.Intn(10)) + mrand.Float64()
+	tokens := 100.0 //float64(mrand.Intn(10)) + mrand.Float64()
 
 	bn := BasicNode{RsaNode: RsaNode{secretKey: sk}, id: id, tokens: tokens}
 	return &bn
@@ -85,5 +85,5 @@ func (bn BasicNode) workerEvaluateContract(contract simulator.Contract) bool {
 }
 
 func (bn BasicNode) verifierEvaluateContract(contract simulator.Contract) bool {
-	return contract.GetAmount(verifierKey) > 0.0
+	return contract.GetAmount(verifierKey) >= 0.0
 }

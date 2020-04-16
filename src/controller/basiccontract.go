@@ -3,13 +3,20 @@ package controller
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"fmt"
 	"log"
 	mrand "math/rand"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/arstevens/hive-sim/src/simulator"
+)
+
+const (
+	clientKey = "A"
+	workerKey = "B"
 )
 
 var totalContracts = 0
@@ -22,23 +29,28 @@ type BasicContract struct {
 	signatures      map[string]string
 }
 
-func NewBasicContract(id string, act int, trans map[string]float64) BasicContract {
+func NewBasicContract(id string, act int, trans map[string]float64) *BasicContract {
 	transMap := trans
 	if transMap == nil {
 		transMap = make(map[string]float64)
 	}
 
 	contract := BasicContract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
-	return contract
+	return &contract
 }
 
-func NewRandomBasicContract(transLimit int) BasicContract {
+func NewRandomBasicContract(transLimit int) *BasicContract {
 	transMap := make(map[string]float64)
 
 	mrand.Seed(time.Now().UnixNano())
-	transVal := float64(mrand.Intn(transLimit-1)) + mrand.Float64()
-	transMap["A"] = transVal
-	transMap["B"] = -transVal
+	var transVal float64
+	if transLimit < 2 {
+		transVal = mrand.Float64()
+	} else {
+		transVal = float64(mrand.Intn(transLimit-1)) + mrand.Float64()
+	}
+	transMap[clientKey] = -transVal
+	transMap[workerKey] = transVal
 	transId := "T" + strconv.Itoa(totalContracts)
 	totalContracts++
 
@@ -68,16 +80,34 @@ func (c *BasicContract) DeleteTransaction(id string) {
 func (c *BasicContract) SignContract(n simulator.Node) {
 	hash := []byte(c.HashTransaction())
 	signature := n.Sign(hash)
+
+	fmt.Println("Node Id: ", n.GetId())
+	fmt.Println("Hash")
+	fmt.Println(hash)
+	fmt.Println("Signature")
+	fmt.Println(signature)
+	fmt.Println()
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	c.signatures[n.GetId()] = encodedSignature
 }
 
 func (c BasicContract) marshalTransaction() string {
 	serial := c.id + "," + strconv.Itoa(c.action)
+
+	flipTransactions := make(map[float64]string)
+	keys := make([]float64, 0)
 	for k, v := range c.transactions {
-		pair := k + ":" + strconv.FormatFloat(v, 'E', -1, 64)
+		flipTransactions[v] = k
+		keys = append(keys, v)
+	}
+	sort.Float64s(keys)
+
+	for _, v := range keys {
+		id := flipTransactions[v]
+		pair := id + ":" + strconv.FormatFloat(v, 'E', -1, 64)
 		serial += "," + pair
 	}
+
 	return serial
 }
 
