@@ -22,11 +22,12 @@ const (
 var totalContracts = 0
 
 type BasicContract struct {
-	id              string
-	action          int
-	transactions    map[string]float64
-	transactionHash string
-	signatures      map[string]string
+	id               string
+	action           int
+	startingBalances map[string]float64
+	transactions     map[string]float64
+	transactionHash  string
+	signatures       map[string]string
 }
 
 func NewBasicContract(id string, act int, trans map[string]float64) *BasicContract {
@@ -35,7 +36,8 @@ func NewBasicContract(id string, act int, trans map[string]float64) *BasicContra
 		transMap = make(map[string]float64)
 	}
 
-	contract := BasicContract{id: id, action: act, transactions: transMap, signatures: make(map[string]string)}
+	contract := BasicContract{id: id, action: act, transactions: transMap,
+		signatures: make(map[string]string), startingBalances: make(map[string]float64)}
 	return &contract
 }
 
@@ -67,6 +69,14 @@ func (c BasicContract) GetSignatures() map[string]string {
 
 func (c BasicContract) GetTransactions() map[string]float64 {
 	return c.transactions
+}
+
+func (c BasicContract) GetStartingBalance(id string) float64 {
+	return c.startingBalances[id]
+}
+
+func (c *BasicContract) SetStartingBalances(sb map[string]float64) {
+	c.startingBalances = sb
 }
 
 func (c *BasicContract) AddTransaction(id string, amount float64) {
@@ -111,6 +121,17 @@ func (c BasicContract) marshalTransaction() string {
 	return serial
 }
 
+func (c BasicContract) marshalStartingBalances() string {
+	serial := ""
+	for id, value := range c.startingBalances {
+		serial += "," + id + ":" + strconv.FormatFloat(value, 'E', -1, 64)
+	}
+	if len(serial) > 0 {
+		return serial[1:]
+	}
+	return serial
+}
+
 func (c BasicContract) marshalSignatures() string {
 	serial := ""
 	for nodeId, signature := range c.signatures {
@@ -131,11 +152,13 @@ func (c BasicContract) HashTransaction() string {
 func (c BasicContract) Marshal() string {
 	transactionSerial := c.marshalTransaction()
 	snapshotSerial := c.marshalSignatures()
+	startingBalanceSerial := c.marshalStartingBalances()
 
 	serial := transactionSerial + ",snap"
 	if len(snapshotSerial) > 0 {
 		serial += "," + snapshotSerial
 	}
+	serial += ",bal," + startingBalanceSerial
 
 	return serial
 }
@@ -164,10 +187,23 @@ func (c *BasicContract) Unmarshal(serial string) {
 	i++
 
 	c.signatures = make(map[string]string)
-	for ; i < len(fields); i++ {
+	for ; fields[i] != "bal"; i++ {
 		pair := strings.Split(fields[i], ":")
 		if len(pair) > 1 {
 			c.signatures[pair[0]] = pair[1]
 		}
+	}
+	i++
+
+	c.startingBalances = make(map[string]float64)
+	for ; i < len(fields); i++ {
+		pair := strings.Split(fields[i], ":")
+		partyId := pair[0]
+		amount, err := strconv.ParseFloat(pair[1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		c.startingBalances[partyId] = amount
 	}
 }

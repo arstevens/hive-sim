@@ -193,7 +193,7 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	transactions := snapshot.GetTransactions()
 	for id, amount := range transactions {
-		if amount < 0.0 && bw.GetTokens(id) < math.Abs(amount) {
+		if amount < 0.0 && snapshot.GetStartingBalance(id) < math.Abs(amount) {
 			return false
 		}
 	}
@@ -222,11 +222,23 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 		if basicVerifySnapshot(snapshot, bw) {
 			bw.updateTokenMap(snapshot)
 			bw.log.successfulTransactions++
-			bw.outWDS <- snapshot.Marshal()
+
+			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, snapshot)
+			bw.outWDS <- processedSnapshot.Marshal()
 		}
 		bw.log.totalTransactions++
 	}
 	done <- true
+}
+
+func prepareContractForPropogation(masterTokenMap *map[string]float64, contract simulator.Contract) simulator.Contract {
+	transactions := contract.GetTransactions()
+	startingValues := make(map[string]float64)
+	for id, value := range transactions {
+		startingValues[id] = (*masterTokenMap)[id]
+	}
+	contract.SetStartingBalances(startingValues)
+	return contract
 }
 
 func basicExecuteContract(nodes []simulator.Node, contract simulator.Contract) simulator.Contract {

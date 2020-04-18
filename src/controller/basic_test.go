@@ -2,12 +2,10 @@ package controller
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
-
-	"github.com/arstevens/hive-sim/src/simulator"
 )
 
+/*
 func TestBasicNode(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC NODE TESTING --------")
 	bn := NewRandomBasicNode()
@@ -100,7 +98,7 @@ func TestCrypto(t *testing.T) {
 	fmt.Println(RsaVerify(data, s, node.PublicKey()))
 	fmt.Println("\n-------- END OF CRYPTO TESTING --------")
 }
-
+*/
 func TestContract(t *testing.T) {
 	fmt.Println("\n-------- START OF CONTRACT TESTING --------")
 	bn1 := NewRandomBasicNode()
@@ -113,6 +111,8 @@ func TestContract(t *testing.T) {
 	transMap[bn2.GetId()] = -0.01
 
 	contract := NewBasicContract(id, action, transMap)
+	sb := map[string]float64{"x": 0.1}
+	contract.SetStartingBalances(sb)
 	contract.SignContract(bn1)
 	contract.SignContract(bn2)
 	serial := contract.Marshal()
