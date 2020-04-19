@@ -32,7 +32,7 @@ func TestBasicWDS(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC WDS TESTING --------")
 	wdsSize := 3
 	nodesPerWds := 10
-	contractsPerWds := 50
+	contractsPerWds := 5
 	transLimit := 1
 
 	fmt.Printf("Test Parameters: WDS_SIZE: %d, NODES_PER: %d, CONTRACTS_PER: %d, TRANS_LIM: %d\n", wdsSize, nodesPerWds, contractsPerWds, transLimit)
@@ -51,11 +51,11 @@ func TestBasicWDS(t *testing.T) {
 	wds[wdsSize-1].EstablishLink(wds[0])
 
 	// Generate Nodes and Contracts
-	allNodes := make([]simulator.Node, 0)
+	allNodes := make([]simulator.Node, wdsSize*nodesPerWds)
 	for idx, server := range wds {
 		for i := 0; i < nodesPerWds; i++ {
 			node := NewRandomBasicNode()
-			allNodes = append(allNodes, node)
+			allNodes[(idx*nodesPerWds)+i] = node
 			server.AssignNode(node)
 		}
 
@@ -69,7 +69,9 @@ func TestBasicWDS(t *testing.T) {
 
 	// Set master nodes list
 	for _, server := range wds {
-		server.SetMasterNodesList(allNodes)
+		copySlice := make([]simulator.Node, len(allNodes))
+		copy(copySlice, allNodes)
+		server.SetMasterNodesList(copySlice)
 	}
 
 	// Start Network Execution

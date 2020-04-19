@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	mrand "math/rand"
+	"strconv"
 	"sync"
 	"time"
 
@@ -69,7 +70,7 @@ func NewBasicWDS(id string, tokens float64) simulator.WDS {
 		id:          id,
 		tokens:      tokens,
 		inWDS:       inWDS,
-		outWDS:      nil,
+		outWDS:      make(chan string),
 		nodesMutex:  &nodesMutex,
 		tokensMutex: &tokensMutex,
 		log:         &log,
@@ -254,6 +255,7 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 			bw.outWDS <- processedSnapshot.Marshal()
 		}
 		bw.log.totalTransactions++
+		fmt.Println(bw.GetId() + ":" + strconv.Itoa(bw.log.totalTransactions))
 	}
 	done <- true
 }

@@ -3,7 +3,6 @@ package controller
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
 	"log"
 	mrand "math/rand"
 	"sort"
@@ -90,13 +89,6 @@ func (c *BasicContract) DeleteTransaction(id string) {
 func (c *BasicContract) SignContract(n simulator.Node) {
 	hash := []byte(c.HashTransaction())
 	signature := n.Sign(hash)
-
-	fmt.Println("Node Id: ", n.GetId())
-	fmt.Println("Hash")
-	fmt.Println(hash)
-	fmt.Println("Signature")
-	fmt.Println(signature)
-	fmt.Println()
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	c.signatures[n.GetId()] = encodedSignature
 }
