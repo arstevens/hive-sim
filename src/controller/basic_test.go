@@ -2,10 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
+
+	"github.com/arstevens/hive-sim/src/simulator"
 )
 
-/*
 func TestBasicNode(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC NODE TESTING --------")
 	bn := NewRandomBasicNode()
@@ -49,9 +51,11 @@ func TestBasicWDS(t *testing.T) {
 	wds[wdsSize-1].EstablishLink(wds[0])
 
 	// Generate Nodes and Contracts
+	allNodes := make([]simulator.Node, 0)
 	for idx, server := range wds {
 		for i := 0; i < nodesPerWds; i++ {
 			node := NewRandomBasicNode()
+			allNodes = append(allNodes, node)
 			server.AssignNode(node)
 		}
 
@@ -61,6 +65,11 @@ func TestBasicWDS(t *testing.T) {
 		}
 
 		server.StartListener(killChannels[idx])
+	}
+
+	// Set master nodes list
+	for _, server := range wds {
+		server.SetMasterNodesList(allNodes)
 	}
 
 	// Start Network Execution
@@ -98,7 +107,7 @@ func TestCrypto(t *testing.T) {
 	fmt.Println(RsaVerify(data, s, node.PublicKey()))
 	fmt.Println("\n-------- END OF CRYPTO TESTING --------")
 }
-*/
+
 func TestContract(t *testing.T) {
 	fmt.Println("\n-------- START OF CONTRACT TESTING --------")
 	bn1 := NewRandomBasicNode()

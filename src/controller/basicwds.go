@@ -46,8 +46,11 @@ type BasicWDS struct {
 	tokensMutex *sync.Mutex
 	log         *BasicLog
 	contracts   []simulator.Contract
-	nodes       map[string]simulator.Node
-	tokenMap    map[string]float64
+	/* Should consolidate all node_id map objects
+	into single map with collective objects value */
+	nodes      map[string]simulator.Node
+	tokenMap   map[string]float64
+	nodeKeyMap map[string]*rsa.PublicKey
 }
 
 func NewBasicWDS(id string, tokens float64) simulator.WDS {
@@ -108,6 +111,13 @@ func (bw *BasicWDS) AssignContract(c simulator.Contract) {
 	bw.contracts = append(bw.contracts, c)
 }
 
+func (bw *BasicWDS) SetMasterNodesList(nodes []simulator.Node) {
+	bw.nodeKeyMap = make(map[string]*rsa.PublicKey)
+	for _, node := range nodes {
+		bw.nodeKeyMap[node.GetId()] = node.PublicKey()
+	}
+}
+
 func (bw BasicWDS) GetId() string {
 	return bw.id
 }
@@ -147,6 +157,10 @@ func (bw BasicWDS) getNode(id string) simulator.Node {
 	return node
 }
 
+func (bw BasicWDS) getRemoteNodeKey(id string) *rsa.PublicKey {
+	return bw.nodeKeyMap[id]
+}
+
 func (bw *BasicWDS) EstablishLink(servers ...simulator.WDS) {
 	bw.outWDS = servers[0].Conn()
 }
@@ -178,7 +192,7 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 			foreign nodes so those initial values must be sent along with
 			contract or another way needs to be found out to fix this authentication
 			issue */
-			if basicVerifySnapshot(&snapshot, bw) {
+			if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
 				bw.updateTokenMap(&snapshot)
 				bw.log.successfulSnapshots++
 				bw.outWDS <- rawSnap
@@ -190,14 +204,27 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 	}
 }
 
-func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
+func basicVerifyLocalPrecondition(snapshot simulator.Contract, bw *BasicWDS) bool {
+	transactions := snapshot.GetTransactions()
+	for id, amount := range transactions {
+		if amount < 0.0 && bw.GetTokens(id) < math.Abs(amount) {
+			return false
+		}
+	}
+	return true
+}
+
+func basicVerifyRemotePrecondition(snapshot simulator.Contract) bool {
 	transactions := snapshot.GetTransactions()
 	for id, amount := range transactions {
 		if amount < 0.0 && snapshot.GetStartingBalance(id) < math.Abs(amount) {
 			return false
 		}
 	}
+	return true
+}
 
+func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	signatures := snapshot.GetSignatures()
 	hash := []byte(snapshot.HashTransaction())
 	for id, signature := range signatures {
@@ -206,7 +233,7 @@ func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 			log.Fatal(err)
 		}
 
-		nodePk := bw.getNode(id).PublicKey()
+		nodePk := bw.getRemoteNodeKey(id)
 		valid := RsaVerify(hash, decodedSignature, nodePk)
 		if !valid {
 			return false
@@ -219,7 +246,7 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 	for _, contract := range bw.contracts {
 		subnet := basicSelectNodesForSubnet(bw.nodes, bw.nodesMutex)
 		snapshot := basicExecuteContract(subnet, contract)
-		if basicVerifySnapshot(snapshot, bw) {
+		if basicVerifyLocalPrecondition(snapshot, bw) && basicVerifySnapshot(snapshot, bw) {
 			bw.updateTokenMap(snapshot)
 			bw.log.successfulTransactions++
 
@@ -234,7 +261,7 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 func prepareContractForPropogation(masterTokenMap *map[string]float64, contract simulator.Contract) simulator.Contract {
 	transactions := contract.GetTransactions()
 	startingValues := make(map[string]float64)
-	for id, value := range transactions {
+	for id, _ := range transactions {
 		startingValues[id] = (*masterTokenMap)[id]
 	}
 	contract.SetStartingBalances(startingValues)
