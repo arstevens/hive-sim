@@ -22,6 +22,7 @@ var totalContracts = 0
 
 type BasicContract struct {
 	id               string
+	origin           string
 	action           int
 	startingBalances map[string]float64
 	transactions     map[string]float64
@@ -76,6 +77,14 @@ func (c BasicContract) GetStartingBalance(id string) float64 {
 
 func (c *BasicContract) SetStartingBalances(sb map[string]float64) {
 	c.startingBalances = sb
+}
+
+func (c *BasicContract) SetOrigin(id string) {
+	c.origin = id
+}
+
+func (c BasicContract) GetOrigin() string {
+	return c.origin
 }
 
 func (c *BasicContract) AddTransaction(id string, amount float64) {
@@ -151,6 +160,7 @@ func (c BasicContract) Marshal() string {
 		serial += "," + snapshotSerial
 	}
 	serial += ",bal," + startingBalanceSerial
+	serial += "," + c.origin
 
 	return serial
 }
@@ -188,7 +198,7 @@ func (c *BasicContract) Unmarshal(serial string) {
 	i++
 
 	c.startingBalances = make(map[string]float64)
-	for ; i < len(fields); i++ {
+	for ; i < len(fields)-1; i++ {
 		pair := strings.Split(fields[i], ":")
 		partyId := pair[0]
 		amount, err := strconv.ParseFloat(pair[1], 64)
@@ -198,4 +208,5 @@ func (c *BasicContract) Unmarshal(serial string) {
 
 		c.startingBalances[partyId] = amount
 	}
+	c.origin = fields[len(fields)-1]
 }

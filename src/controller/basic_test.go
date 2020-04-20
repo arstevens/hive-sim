@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
-
-	"github.com/arstevens/hive-sim/src/simulator"
 )
 
 func TestBasicNode(t *testing.T) {
@@ -28,6 +26,7 @@ func TestBasicNode(t *testing.T) {
 	fmt.Println("-------- END OF BASIC NODE TESTING --------")
 }
 
+/*
 func TestBasicWDS(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC WDS TESTING --------")
 	wdsSize := 3
@@ -100,6 +99,7 @@ func TestBasicWDS(t *testing.T) {
 
 	fmt.Println("-------- END OF BASIC WDS TESTING --------")
 }
+*/
 
 func TestCrypto(t *testing.T) {
 	fmt.Println("\n-------- START OF CRYPTO TESTING --------")
@@ -126,6 +126,7 @@ func TestContract(t *testing.T) {
 	contract.SetStartingBalances(sb)
 	contract.SignContract(bn1)
 	contract.SignContract(bn2)
+	contract.SetOrigin("wds1")
 	serial := contract.Marshal()
 	fmt.Println(contract.Marshal())
 	var contract2 BasicContract

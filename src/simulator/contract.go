@@ -6,6 +6,8 @@ type Contract interface {
 	GetTransactions() map[string]float64
 	GetStartingBalance(string) float64
 	SetStartingBalances(map[string]float64)
+	GetOrigin() string
+	SetOrigin(string)
 	AddTransaction(string, float64)
 	HashTransaction() string
 	DeleteTransaction(string)

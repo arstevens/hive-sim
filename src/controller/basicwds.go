@@ -193,12 +193,14 @@ func basicWDSConnListener(bw *BasicWDS, close chan bool) {
 			foreign nodes so those initial values must be sent along with
 			contract or another way needs to be found out to fix this authentication
 			issue */
-			if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
-				bw.updateTokenMap(&snapshot)
-				bw.log.successfulSnapshots++
-				bw.outWDS <- rawSnap
+			if snapshot.GetOrigin() != bw.GetId() {
+				if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
+					bw.updateTokenMap(&snapshot)
+					bw.log.successfulSnapshots++
+					bw.outWDS <- rawSnap
+				}
+				bw.log.totalSnapshots++
 			}
-			bw.log.totalSnapshots++
 		case <-close:
 			return
 		}
@@ -251,7 +253,7 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 			bw.updateTokenMap(snapshot)
 			bw.log.successfulTransactions++
 
-			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, snapshot)
+			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, bw.GetOrigin(), snapshot)
 			bw.outWDS <- processedSnapshot.Marshal()
 		}
 		bw.log.totalTransactions++
@@ -260,13 +262,14 @@ func basicContractExecutor(bw *BasicWDS, done chan bool) {
 	done <- true
 }
 
-func prepareContractForPropogation(masterTokenMap *map[string]float64, contract simulator.Contract) simulator.Contract {
+func prepareContractForPropogation(masterTokenMap *map[string]float64, origin string, contract simulator.Contract) simulator.Contract {
 	transactions := contract.GetTransactions()
 	startingValues := make(map[string]float64)
 	for id, _ := range transactions {
 		startingValues[id] = (*masterTokenMap)[id]
 	}
 	contract.SetStartingBalances(startingValues)
+	contract.SetOrigin(origin)
 	return contract
 }
 
