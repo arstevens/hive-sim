@@ -66,7 +66,7 @@ func TestBasicWDS(t *testing.T) {
 	for _, server := range wds {
 		copySlice := make([]simulator.Node, len(allNodes))
 		copy(copySlice, allNodes)
-		server.SetMasterNodesList(copySlice)
+		server.SetMasterKeyList(copySlice)
 	}
 
 	// Execute all contracts

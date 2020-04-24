@@ -3,10 +3,8 @@ package simulator
 type StateGenerator interface {
 	NextNode() Node
 	NextWDS() WDS
-	NextContract() Contract
 	NodeLeft() int
+	GetAllNodes() []Node
 	WDSLeft() int
-	ContractsLeft() int
 	GetNodeDistribution() []int
-	GetContractDistribution() []int
 }

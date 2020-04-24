@@ -5,7 +5,7 @@ type WDS interface {
 	RunContracts() []string
 	VerifySnapshots(snaps []string)
 	GetTokens(string) float64
-	GetLog() interface{}
+	GetLog() Log
 	AssignNode(Node)
 	AssignContract(Contract)
 	SetMasterKeyList([]Node)

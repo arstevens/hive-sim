@@ -5,7 +5,24 @@ type HiveNet struct {
 }
 
 func (hn HiveNet) Run() {
+	executedContracts := make([][]string, 0)
+	for _, server := range hn.servers {
+		runContracts := server.RunContracts()
+		executedContracts = append(executedContracts, runContracts)
+	}
 
+	for i, server := range hn.servers {
+		for j, snapshots := range executedContracts {
+			if i != j {
+				server.VerifySnapshots(snapshots)
+			}
+		}
+	}
+
+	for _, server := range hn.servers {
+		log := server.GetLog()
+		log.Print()
+	}
 }
 
 func (hn HiveNet) AddWDS(s WDS) {
