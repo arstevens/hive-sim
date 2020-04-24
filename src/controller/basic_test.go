@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
+	"time"
+
+	"github.com/arstevens/hive-sim/src/simulator"
 )
 
 func TestBasicNode(t *testing.T) {
@@ -26,12 +29,11 @@ func TestBasicNode(t *testing.T) {
 	fmt.Println("-------- END OF BASIC NODE TESTING --------")
 }
 
-/*
 func TestBasicWDS(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC WDS TESTING --------")
-	wdsSize := 3
+	wdsSize := 2
 	nodesPerWds := 10
-	contractsPerWds := 5
+	contractsPerWds := 2
 	transLimit := 1
 
 	fmt.Printf("Test Parameters: WDS_SIZE: %d, NODES_PER: %d, CONTRACTS_PER: %d, TRANS_LIM: %d\n", wdsSize, nodesPerWds, contractsPerWds, transLimit)
@@ -51,17 +53,21 @@ func TestBasicWDS(t *testing.T) {
 
 	// Generate Nodes and Contracts
 	allNodes := make([]simulator.Node, wdsSize*nodesPerWds)
+	wds[0].AssignContract(NewRandomBasicContract(transLimit))
+	wds[0].AssignContract(NewRandomBasicContract(transLimit))
+	wds[1].AssignContract(NewRandomBasicContract(transLimit))
 	for idx, server := range wds {
 		for i := 0; i < nodesPerWds; i++ {
 			node := NewRandomBasicNode()
 			allNodes[(idx*nodesPerWds)+i] = node
 			server.AssignNode(node)
 		}
-
-		for i := 0; i < contractsPerWds; i++ {
-			contract := NewRandomBasicContract(transLimit)
-			server.AssignContract(contract)
-		}
+		/*
+			for i := 0; i < contractsPerWds; i++ {
+				contract := NewRandomBasicContract(transLimit)
+				server.AssignContract(contract)
+			}
+		*/
 
 		server.StartListener(killChannels[idx])
 	}
@@ -82,12 +88,17 @@ func TestBasicWDS(t *testing.T) {
 	// Wait for execution to end
 	for _, finishChannel := range finishChannels {
 		<-finishChannel
+		fmt.Println("finished")
 	}
+	time.Sleep(time.Second * 100)
 
 	// Kill WDS Listeners
-	for i := 0; i < wdsSize; i++ {
-		killChannels[i] <- true
-	}
+	/*
+		for i := 0; i < wdsSize; i++ {
+			fmt.Println("Killed: ", i)
+			killChannels[i] <- true
+		}
+	*/
 
 	// Retrieve and Print Logs
 	logs := make([]*BasicLog, wdsSize)
@@ -99,7 +110,6 @@ func TestBasicWDS(t *testing.T) {
 
 	fmt.Println("-------- END OF BASIC WDS TESTING --------")
 }
-*/
 
 func TestCrypto(t *testing.T) {
 	fmt.Println("\n-------- START OF CRYPTO TESTING --------")

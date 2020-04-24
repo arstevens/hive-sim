@@ -9,7 +9,6 @@ import (
 	"log"
 	"math"
 	mrand "math/rand"
-	"strconv"
 	"sync"
 	"time"
 
@@ -173,36 +172,16 @@ func (bw *BasicWDS) updateTokenMap(snap simulator.Contract) {
 	}
 }
 
-func (bw *BasicWDS) StartListener(close chan bool) {
-	go basicWDSConnListener(bw, close)
-}
-
-func (bw *BasicWDS) StartExecution() chan bool {
-	finished := make(chan bool)
-	go basicContractExecutor(bw, finished)
-	return finished
-}
-
-func basicWDSConnListener(bw *BasicWDS, close chan bool) {
-	for {
-		select {
-		case rawSnap := <-bw.inWDS:
-			var snapshot BasicContract
-			snapshot.Unmarshal(rawSnap)
-			/* WDS doesn't contain node token map entries for
-			foreign nodes so those initial values must be sent along with
-			contract or another way needs to be found out to fix this authentication
-			issue */
-			if snapshot.GetOrigin() != bw.GetId() {
-				if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
-					bw.updateTokenMap(&snapshot)
-					bw.log.successfulSnapshots++
-					bw.outWDS <- rawSnap
-				}
-				bw.log.totalSnapshots++
+func (bw *BasicWDS) VerifySnapshots(snapshots []string) {
+	for _, rawSnap := range snapshots {
+		var snapshot BasicContract
+		snapshot.Unmarshal(rawSnap)
+		if snapshot.GetOrigin() != bw.GetId() {
+			if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
+				bw.updateTokenMap(&snapshot)
+				bw.log.successfulSnapshots++
 			}
-		case <-close:
-			return
+			bw.log.totalSnapshots++
 		}
 	}
 }
@@ -245,21 +224,21 @@ func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	return true
 }
 
-func basicContractExecutor(bw *BasicWDS, done chan bool) {
-	for _, contract := range bw.contracts {
+func (bw *BasicWDS) RunContracts(contracts []simulator.Contract) []string {
+	allContracts := make([]string, len(contracts))
+	for i, contract := range contracts {
 		subnet := basicSelectNodesForSubnet(bw.nodes, bw.nodesMutex)
 		snapshot := basicExecuteContract(subnet, contract)
 		if basicVerifyLocalPrecondition(snapshot, bw) && basicVerifySnapshot(snapshot, bw) {
 			bw.updateTokenMap(snapshot)
 			bw.log.successfulTransactions++
 
-			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, bw.GetOrigin(), snapshot)
-			bw.outWDS <- processedSnapshot.Marshal()
+			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, bw.GetId(), snapshot)
+			allContracts[i] = processedSnapshot.Marshal()
 		}
 		bw.log.totalTransactions++
-		fmt.Println(bw.GetId() + ":" + strconv.Itoa(bw.log.totalTransactions))
 	}
-	done <- true
+	return allContracts
 }
 
 func prepareContractForPropogation(masterTokenMap *map[string]float64, origin string, contract simulator.Contract) simulator.Contract {
