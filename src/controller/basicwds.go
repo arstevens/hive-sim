@@ -222,9 +222,9 @@ func basicVerifySnapshot(snapshot simulator.Contract, bw *BasicWDS) bool {
 	return true
 }
 
-func (bw *BasicWDS) RunContracts(contracts []simulator.Contract) []string {
-	allContracts := make([]string, len(contracts))
-	for i, contract := range contracts {
+func (bw *BasicWDS) RunContracts() []string {
+	allContracts := make([]string, len(bw.contracts))
+	for i, contract := range bw.contracts {
 		subnet := basicSelectNodesForSubnet(bw.nodes, bw.nodesMutex)
 		snapshot := basicExecuteContract(subnet, contract)
 		if basicVerifyLocalPrecondition(snapshot, bw) && basicVerifySnapshot(snapshot, bw) {

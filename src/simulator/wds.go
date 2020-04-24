@@ -2,7 +2,7 @@ package simulator
 
 type WDS interface {
 	GetId() string
-	RunContracts([]Contract) []string
+	RunContracts() []string
 	VerifySnapshots(snaps []string)
 	GetTokens(string) float64
 	GetLog() interface{}
