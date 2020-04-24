@@ -161,10 +161,6 @@ func (bw BasicWDS) getRemoteNodeKey(id string) *rsa.PublicKey {
 	return bw.nodeKeyMap[id]
 }
 
-func (bw *BasicWDS) EstablishLink(servers ...simulator.WDS) {
-	bw.outWDS = servers[0].Conn()
-}
-
 func (bw *BasicWDS) updateTokenMap(snap simulator.Contract) {
 	transaction := snap.GetTransactions()
 	for id, amount := range transaction {
@@ -182,6 +178,8 @@ func (bw *BasicWDS) VerifySnapshots(snapshots []string) {
 				bw.log.successfulSnapshots++
 			}
 			bw.log.totalSnapshots++
+		} else {
+			fmt.Println("killed")
 		}
 	}
 }

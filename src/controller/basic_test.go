@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/arstevens/hive-sim/src/simulator"
 )
@@ -31,45 +30,36 @@ func TestBasicNode(t *testing.T) {
 
 func TestBasicWDS(t *testing.T) {
 	fmt.Println("\n-------- START OF BASIC WDS TESTING --------")
-	wdsSize := 2
+	wdsSize := 5
 	nodesPerWds := 10
-	contractsPerWds := 2
+	contractsPerWds := 10
 	transLimit := 1
 
 	fmt.Printf("Test Parameters: WDS_SIZE: %d, NODES_PER: %d, CONTRACTS_PER: %d, TRANS_LIM: %d\n", wdsSize, nodesPerWds, contractsPerWds, transLimit)
 
 	// Generate WDSs and establish cyclic network
 	wds := make([]simulator.WDS, wdsSize)
-	killChannels := make([]chan bool, wdsSize)
 
 	wds[0] = NewRandomBasicWDS()
-	killChannels[0] = make(chan bool)
 	for i := 1; i < wdsSize; i++ {
 		wds[i] = NewRandomBasicWDS()
-		wds[i-1].EstablishLink(wds[i])
-		killChannels[i] = make(chan bool)
 	}
-	wds[wdsSize-1].EstablishLink(wds[0])
 
 	// Generate Nodes and Contracts
 	allNodes := make([]simulator.Node, wdsSize*nodesPerWds)
-	wds[0].AssignContract(NewRandomBasicContract(transLimit))
-	wds[0].AssignContract(NewRandomBasicContract(transLimit))
-	wds[1].AssignContract(NewRandomBasicContract(transLimit))
+	allContracts := make([][]simulator.Contract, wdsSize)
 	for idx, server := range wds {
 		for i := 0; i < nodesPerWds; i++ {
 			node := NewRandomBasicNode()
 			allNodes[(idx*nodesPerWds)+i] = node
 			server.AssignNode(node)
 		}
-		/*
-			for i := 0; i < contractsPerWds; i++ {
-				contract := NewRandomBasicContract(transLimit)
-				server.AssignContract(contract)
-			}
-		*/
 
-		server.StartListener(killChannels[idx])
+		contracts := make([]simulator.Contract, contractsPerWds)
+		for i := 0; i < contractsPerWds; i++ {
+			contracts[i] = NewRandomBasicContract(transLimit)
+		}
+		allContracts[idx] = contracts
 	}
 
 	// Set master nodes list
@@ -79,26 +69,19 @@ func TestBasicWDS(t *testing.T) {
 		server.SetMasterNodesList(copySlice)
 	}
 
-	// Start Network Execution
-	finishChannels := make([]chan bool, wdsSize)
+	// Execute all contracts
+	executedContracts := make([][]string, wdsSize)
 	for idx, server := range wds {
-		finishChannels[idx] = server.StartExecution()
+		executedContracts[idx] = server.RunContracts(allContracts[idx])
 	}
 
-	// Wait for execution to end
-	for _, finishChannel := range finishChannels {
-		<-finishChannel
-		fmt.Println("finished")
-	}
-	time.Sleep(time.Second * 100)
-
-	// Kill WDS Listeners
-	/*
-		for i := 0; i < wdsSize; i++ {
-			fmt.Println("Killed: ", i)
-			killChannels[i] <- true
+	for idx, server := range wds {
+		for j, snapshots := range executedContracts {
+			if idx != j {
+				server.VerifySnapshots(snapshots)
+			}
 		}
-	*/
+	}
 
 	// Retrieve and Print Logs
 	logs := make([]*BasicLog, wdsSize)
