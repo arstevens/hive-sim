@@ -122,10 +122,6 @@ func (bw BasicWDS) GetId() string {
 	return bw.id
 }
 
-func (bw BasicWDS) Conn() chan string {
-	return bw.inWDS
-}
-
 func (bw BasicWDS) GetTokens(id string) float64 {
 	if id == "" {
 		return bw.tokens
@@ -137,7 +133,7 @@ func (bw BasicWDS) GetTokens(id string) float64 {
 	return tokens
 }
 
-func (bw BasicWDS) GetLog() interface{} {
+func (bw BasicWDS) GetLog() simulator.Log {
 	log := bw.log
 	log.wdsId = bw.id
 	log.wdsTokenLog = bw.tokenMap
