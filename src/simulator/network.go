@@ -1,5 +1,6 @@
 package simulator
 
+/*
 type HiveNet struct {
 	servers []WDS
 }
@@ -41,3 +42,4 @@ func (hn HiveNet) NetworkLog() map[string]interface{} {
 	}
 	return netLog
 }
+*/
