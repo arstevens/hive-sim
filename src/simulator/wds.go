@@ -8,5 +8,5 @@ type WDS interface {
 	GetLog() interface{}
 	AssignNode(Node)
 	AssignContract(Contract)
-	SetMasterNodesList([]Node)
+	SetMasterKeyList([]Node)
 }

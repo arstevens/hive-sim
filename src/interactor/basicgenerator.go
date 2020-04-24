@@ -1,6 +1,9 @@
 package interactor
 
 import (
+	mrand "math/rand"
+	"time"
+
 	"github.com/arstevens/hive-sim/src/controller"
 	"github.com/arstevens/hive-sim/src/simulator"
 )
@@ -11,21 +14,17 @@ const (
 )
 
 type BasicGenerator struct {
-	nodesLeft            int
-	wdsLeft              int
-	contractsLeft        int
-	contractGenType      int
-	contractLimit        int
-	nodeDistribution     []int
-	contractDistribution []int
+	nodesLeft        int
+	wdsLeft          int
+	contractGenType  int
+	contractLimit    int
+	nodeDistribution []int
 }
 
-func NewBasicGenerator(nodeCount int, wdsCount int, contractCount int, genType int,
-	contractLimit int, nodeDist []int) BasicGenerator {
+func NewBasicGenerator(nodeCount int, wdsCount int, genType int, contractLimit int, nodeDist []int) BasicGenerator {
 	return BasicGenerator{
 		nodesLeft:        nodeCount,
 		wdsLeft:          wdsCount,
-		contractsLeft:    contractCount,
 		contractGenType:  genType,
 		contractLimit:    contractLimit,
 		nodeDistribution: nodeDist,
@@ -40,15 +39,23 @@ func (bg BasicGenerator) WDSLeft() int {
 	return bg.wdsLeft
 }
 
-func (bg *BasicGenerator) NextNode() simulator.Node {
-	node := controller.NewRandomBasicNode()
-	bg.nodesLeft = bg.nodesLeft - 1
-	return node
+func (bg BasicGenerator) NextNode() simulator.Node {
+	return controller.NewRandomBasicNode()
 }
 
-func (bg *BasicGenerator) NextWDS() simulator.WDS {
+func (bg BasicGenerator) NextWDS() simulator.WDS {
 	wds := controller.NewRandomBasicWDS()
-	bg.wdsLeft = bg.wdsLeft - 1
+	contractCount := bg.contractLimit
+	if bg.contractGenType == RANDOM_CGEN {
+		mrand.Seed(time.Now().UnixNano())
+		contractCount = mrand.Intn(bg.contractLimit)
+	}
+
+	for i := 0; i < contractCount; i++ {
+		contract := controller.NewRandomBasicContract(1)
+		wds.AssignContract(contract)
+	}
+
 	return wds
 }
 

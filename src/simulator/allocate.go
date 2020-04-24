@@ -1,6 +1,5 @@
 package simulator
 
-/*
 func AllocateResources(hn HiveNet, gen StateGenerator) {
 	totalServers := gen.WDSLeft()
 	distribution := gen.GetNodeDistribution()
@@ -15,4 +14,3 @@ func AllocateResources(hn HiveNet, gen StateGenerator) {
 		servers[i] = wds
 	}
 }
-*/

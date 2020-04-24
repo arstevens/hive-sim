@@ -111,7 +111,7 @@ func (bw *BasicWDS) AssignContract(c simulator.Contract) {
 	bw.contracts = append(bw.contracts, c)
 }
 
-func (bw *BasicWDS) SetMasterNodesList(nodes []simulator.Node) {
+func (bw *BasicWDS) SetMasterKeyList(nodes []simulator.Node) {
 	bw.nodeKeyMap = make(map[string]*rsa.PublicKey)
 	for _, node := range nodes {
 		bw.nodeKeyMap[node.GetId()] = node.PublicKey()
