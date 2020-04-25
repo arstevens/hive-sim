@@ -36,9 +36,9 @@ func (bg BasicGenerator) WDSLeft() int {
 	return bg.wdsLeft
 }
 
-func (bg *BasicGenerator) GetAllNodes() []simulator.Node {
+func (bg *BasicGenerator) GetAllNodes() simulator.Node {
 	allNodes := bg.allNodes
-	return allNodes
+	return allNodes[0]
 }
 
 func (bg *BasicGenerator) NextNode() simulator.Node {
