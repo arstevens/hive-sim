@@ -20,5 +20,4 @@ func SimulatorTest(t *testing.T) {
 
 	network := NewHiveNet()
 	AllocateResources(network, generator)
-
 }
