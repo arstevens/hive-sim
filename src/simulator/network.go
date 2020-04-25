@@ -4,6 +4,12 @@ type HiveNet struct {
 	servers []WDS
 }
 
+func NewHiveNet() *HiveNet {
+	return &HiveNet{
+		servers: make([]WDS, 0),
+	}
+}
+
 func (hn HiveNet) Run() {
 	executedContracts := make([][]string, 0)
 	for _, server := range hn.servers {

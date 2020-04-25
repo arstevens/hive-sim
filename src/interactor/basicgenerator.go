@@ -36,6 +36,10 @@ func (bg BasicGenerator) WDSLeft() int {
 	return bg.wdsLeft
 }
 
+func (bg BasicGenerator) GetAllNodes() []simulator.Node {
+	return bg.allNodes
+}
+
 func (bg *BasicGenerator) NextNode() simulator.Node {
 	node := controller.NewRandomBasicNode()
 	bg.allNodes = append(bg.allNodes, node)

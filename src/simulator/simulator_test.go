@@ -18,4 +18,7 @@ func SimulatorTest(t *testing.T) {
 	}
 	generator := interactor.NewBasicGenerator(nodeSize, wdsSize, contractLimit, transLimit, nodeDist)
 
+	network := NewHiveNet()
+	AllocateResources(network, generator)
+
 }
