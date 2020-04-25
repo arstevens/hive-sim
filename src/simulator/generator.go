@@ -4,7 +4,7 @@ type StateGenerator interface {
 	NextNode() Node
 	NextWDS() WDS
 	NodeLeft() int
-	GetAllNodes() []Node
 	WDSLeft() int
+	GetAllNodes() []Node
 	GetNodeDistribution() []int
 }
