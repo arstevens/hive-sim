@@ -41,14 +41,14 @@ func (bg BasicGenerator) GetAllNodes() []simulator.Node {
 	return allNodes
 }
 
-func (bg BasicGenerator) NextNode() simulator.Node {
+func (bg *BasicGenerator) NextNode() simulator.Node {
 	node := controller.NewRandomBasicNode()
 	bg.allNodes = append(bg.allNodes, node)
 	bg.nodesLeft = bg.nodesLeft - 1
 	return node
 }
 
-func (bg BasicGenerator) NextWDS() simulator.WDS {
+func (bg *BasicGenerator) NextWDS() simulator.WDS {
 	wds := controller.NewRandomBasicWDS()
 	bg.wdsLeft = bg.wdsLeft - 1
 

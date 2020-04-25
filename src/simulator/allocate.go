@@ -15,7 +15,6 @@ func AllocateResources(hn *HiveNet, gen StateGenerator) {
 		}
 		servers[i] = wds
 	}
-
 	for _, server := range servers {
 		server.SetMasterKeyList(gen.GetAllNodes())
 		hn.AddWDS(server)
