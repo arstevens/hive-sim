@@ -19,10 +19,9 @@ func main() {
 	}
 	fmt.Println(len(nodeDist))
 	generator := interactor.NewBasicGenerator(wdsSize, nodeSize, contractLimit, transLimit, nodeDist)
-	g2 := &generator
 
 	network := simulator.NewHiveNet()
 	fmt.Println(generator.WDSLeft())
-	simulator.AllocateResources(network, g2)
+	simulator.AllocateResources(network, generator)
 	network.Run()
 }

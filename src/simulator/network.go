@@ -34,7 +34,7 @@ func (hn HiveNet) Run() {
 	}
 }
 
-func (hn HiveNet) AddWDS(s WDS) {
+func (hn *HiveNet) AddWDS(s WDS) {
 	hn.servers = append(hn.servers, s)
 }
 
