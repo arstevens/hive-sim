@@ -35,8 +35,8 @@ func (hn *HiveNet) AddWDS(s WDS) {
 	hn.servers = append(hn.servers, s)
 }
 
-func (hn HiveNet) NetworkLog() map[string]interface{} {
-	netLog := make(map[string]interface{})
+func (hn HiveNet) NetworkLog() map[string]Log {
+	netLog := make(map[string]Log)
 	for _, wds := range hn.servers {
 		netLog[wds.GetId()] = wds.GetLog()
 	}

@@ -1,7 +1,5 @@
 package simulator
 
-import "fmt"
-
 func AllocateResources(hn *HiveNet, gen StateGenerator) {
 	totalServers := gen.WDSLeft()
 	distribution := gen.GetNodeDistribution()
@@ -18,7 +16,5 @@ func AllocateResources(hn *HiveNet, gen StateGenerator) {
 	for _, server := range servers {
 		server.SetMasterKeyList(gen.GetAllNodes())
 		hn.AddWDS(server)
-		fmt.Println("added server")
 	}
-	fmt.Println("allocated")
 }
