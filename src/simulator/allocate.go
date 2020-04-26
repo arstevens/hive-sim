@@ -20,5 +20,4 @@ func AllocateResources(hn *HiveNet, gen StateGenerator) {
 		hn.AddWDS(server)
 	}
 	fmt.Println("allocated")
-
 }

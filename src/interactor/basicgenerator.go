@@ -17,8 +17,8 @@ type BasicGenerator struct {
 	nodeDistribution []int
 }
 
-func NewBasicGenerator(wdsCount int, nodeCount int, contractLimit int, transLimit int, nodeDist []int) BasicGenerator {
-	return BasicGenerator{
+func NewBasicGenerator(wdsCount int, nodeCount int, contractLimit int, transLimit int, nodeDist []int) *BasicGenerator {
+	return &BasicGenerator{
 		nodesLeft:        nodeCount * wdsCount,
 		wdsLeft:          wdsCount,
 		contractLimit:    contractLimit,
