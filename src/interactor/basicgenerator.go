@@ -1,9 +1,6 @@
 package interactor
 
 import (
-	mrand "math/rand"
-	"time"
-
 	"github.com/arstevens/hive-sim/src/controller"
 	"github.com/arstevens/hive-sim/src/simulator"
 )
@@ -51,9 +48,7 @@ func (bg *BasicGenerator) NextNode() simulator.Node {
 func (bg *BasicGenerator) NextWDS() simulator.WDS {
 	wds := controller.NewRandomBasicWDS()
 	bg.wdsLeft = bg.wdsLeft - 1
-
-	mrand.Seed(time.Now().UnixNano())
-	contractCount := mrand.Intn(bg.contractLimit)
+	contractCount := bg.contractLimit
 
 	for i := 0; i < contractCount; i++ {
 		contract := controller.NewRandomBasicContract(bg.transactionLimit)

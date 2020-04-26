@@ -1,7 +1,5 @@
 package simulator
 
-import "fmt"
-
 type HiveNet struct {
 	servers []WDS
 }
@@ -13,7 +11,6 @@ func NewHiveNet() *HiveNet {
 }
 
 func (hn HiveNet) Run() {
-	fmt.Println(len(hn.servers))
 	executedContracts := make([][]string, 0)
 	for _, server := range hn.servers {
 		runContracts := server.RunContracts()
