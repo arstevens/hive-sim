@@ -15,28 +15,6 @@ import (
 	"github.com/arstevens/hive-sim/src/simulator"
 )
 
-type BasicLog struct {
-	wdsId                  string
-	totalTransactions      int
-	successfulTransactions int
-	totalSnapshots         int
-	successfulSnapshots    int
-	wdsTokenLog            map[string]float64
-	nodeTokenLog           map[string]float64
-}
-
-func (bl BasicLog) Print() {
-	fmt.Printf(`Id: %s {
-		Total Transactions: %d,
-		Successful Transactions: %d,
-		Total Snapshots: %d,
-		Successful Snapshot: %d,
-		}`, bl.wdsId, bl.totalTransactions,
-		bl.successfulTransactions, bl.totalSnapshots,
-		bl.successfulSnapshots)
-	fmt.Println()
-}
-
 type BasicWDS struct {
 	id          string
 	tokens      float64
@@ -171,9 +149,9 @@ func (bw *BasicWDS) VerifySnapshots(snapshots []string) {
 		if snapshot.GetOrigin() != bw.GetId() {
 			if basicVerifyRemotePrecondition(&snapshot) && basicVerifySnapshot(&snapshot, bw) {
 				bw.updateTokenMap(&snapshot)
-				bw.log.successfulSnapshots++
+				bw.log.IncSuccessfulSnapshots()
 			}
-			bw.log.totalSnapshots++
+			bw.log.IncTotalSnapshots()
 		} else {
 			fmt.Println("killed")
 		}
@@ -225,12 +203,12 @@ func (bw *BasicWDS) RunContracts() []string {
 		snapshot := basicExecuteContract(subnet, contract)
 		if basicVerifyLocalPrecondition(snapshot, bw) && basicVerifySnapshot(snapshot, bw) {
 			bw.updateTokenMap(snapshot)
-			bw.log.successfulTransactions++
+			bw.log.IncSuccessfulTransactions()
 
 			processedSnapshot := prepareContractForPropogation(&bw.tokenMap, bw.GetId(), snapshot)
 			allContracts[i] = processedSnapshot.Marshal()
 		}
-		bw.log.totalTransactions++
+		bw.log.IncTotalTransactions()
 	}
 	return allContracts
 }
