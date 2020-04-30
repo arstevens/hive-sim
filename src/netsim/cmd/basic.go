@@ -28,7 +28,7 @@ var runbasicCmd = &cobra.Command{
 	Use:   "basic",
 	Short: "basic runs a perfect-world hive simulation",
 	Long: `basic runs a simulation where all nodes have a standardized
-	behavior. This is unlikely to happen in the real world.`,
+behavior. This is unlikely to happen in the real world.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serverCount, _ := cmd.Flags().GetInt32("servers")
 		nodeCount, _ := cmd.Flags().GetInt32("nodes")

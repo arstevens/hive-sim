@@ -26,10 +26,12 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "run starts a network simulation",
 	Long: `run allows you to run different implemented versions
-	of simulated hive protocols. Ex:
-					netsim run basic -s 5 -n 10 -c 10 -t 1
-					Runs a basic simulation with five servers, 50 nodes,
-					50 contracts and a transaction limit of 1`,
+of simulated hive protocols. Ex:
+
+	netsim run basic -s 5 -n 10 -c 10 -t 1
+
+	Runs a basic simulation with five servers, 50 nodes,
+	50 contracts and a transaction limit of 1`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("Provide item to the run command")
 	},

@@ -20,11 +20,11 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "netsim",
 	Short: "netsim simulates Hive network behaviour",
-	Long: `netsim is an application for simulating a series of
-	different types of protocol and algorithm implementations of
-	different Hive components. This allows for rapid testing and
-	development to be done before implementing changes in the official
-	HiveNet software`,
+	Long: `NetSim is an application for simulating
+different protocol and algorithm implementations of
+Hive components. This allows for rapid testing and
+development to be done before implementing the official
+HiveNet software`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
