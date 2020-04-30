@@ -27,7 +27,11 @@ func (cf *ConsoleFormatter) Format(netlog map[string]simulator.Log) {
 		}
 		entryFmt += "}\n"
 
-		entry := fmt.Sprintf(entryFmt, stats...)
+		ifaceStats := make([]interface{}, len(stats))
+		for i, stat := range stats {
+			ifaceStats[i] = stat
+		}
+		entry := fmt.Sprintf(entryFmt, ifaceStats...)
 		cf.entries[entryCount] = entry
 		entryCount++
 	}
