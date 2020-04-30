@@ -10,6 +10,12 @@ type ConsoleFormatter struct {
 	entries []string
 }
 
+func NewConsoleFormatter() *ConsoleFormatter {
+	return &ConsoleFormatter{
+		entries: make([]string, 0),
+	}
+}
+
 func (cf *ConsoleFormatter) Format(netlog map[string]simulator.Log) {
 	cf.entries = make([]string, len(netlog))
 	entryCount := 0
