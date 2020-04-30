@@ -1,5 +1,5 @@
 package simulator
 
 type Log interface {
-	Print()
+	GetStats() map[string]int
 }

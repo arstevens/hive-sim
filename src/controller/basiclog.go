@@ -1,6 +1,11 @@
 package controller
 
-import "fmt"
+var (
+	TotalTransactions      = "transactions_seen"
+	SuccessfulTransactions = "transactions_passed"
+	TotalSnapshots         = "snapshots_seen"
+	SuccessfulSnapshots    = "snapshots_passed"
+)
 
 type BasicLog struct {
 	wdsId                  string
@@ -12,16 +17,13 @@ type BasicLog struct {
 	nodeTokenLog           map[string]float64
 }
 
-func (bl BasicLog) Print() {
-	fmt.Printf(`Id: %s {
-		Total Transactions: %d,
-		Successful Transactions: %d,
-		Total Snapshots: %d,
-		Successful Snapshot: %d,
-		}`, bl.wdsId, bl.totalTransactions,
-		bl.successfulTransactions, bl.totalSnapshots,
-		bl.successfulSnapshots)
-	fmt.Println()
+func (bl BasicLog) GetStats() map[string]int {
+	statsMap := make(map[string]int)
+	statsMap[TotalTransactions] = bl.totalTransactions
+	statsMap[SuccessfulTransactions] = bl.successfulTransactions
+	statsMap[TotalSnapshots] = bl.totalSnapshots
+	statsMap[SuccessfulSnapshots] = bl.successfulSnapshots
+	return statsMap
 }
 
 func (bl *BasicLog) IncTotalTransactions() {
