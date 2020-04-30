@@ -1,12 +1,14 @@
 package simulator
 
 type HiveNet struct {
-	servers []WDS
+	servers   []WDS
+	formatter Formatter
 }
 
-func NewHiveNet() *HiveNet {
+func NewHiveNet(format Formatter) *HiveNet {
 	return &HiveNet{
-		servers: make([]WDS, 0),
+		servers:   make([]WDS, 0),
+		formatter: format,
 	}
 }
 
@@ -24,13 +26,16 @@ func (hn HiveNet) Run() {
 			}
 		}
 	}
+
+	hn.formatter.Format(hn.networkLog())
+	hn.formatter.Save()
 }
 
 func (hn *HiveNet) AddWDS(s WDS) {
 	hn.servers = append(hn.servers, s)
 }
 
-func (hn HiveNet) NetworkLog() map[string]Log {
+func (hn HiveNet) networkLog() map[string]Log {
 	netLog := make(map[string]Log)
 	for _, wds := range hn.servers {
 		netLog[wds.GetId()] = wds.GetLog()
