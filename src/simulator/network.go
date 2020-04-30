@@ -24,11 +24,6 @@ func (hn HiveNet) Run() {
 			}
 		}
 	}
-
-	for _, server := range hn.servers {
-		log := server.GetLog()
-		log.Print()
-	}
 }
 
 func (hn *HiveNet) AddWDS(s WDS) {
