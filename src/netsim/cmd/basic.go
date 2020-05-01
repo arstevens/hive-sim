@@ -19,6 +19,7 @@ import (
 	"math"
 
 	"github.com/arstevens/hive-sim/src/interactor"
+	"github.com/arstevens/hive-sim/src/reporter"
 	"github.com/arstevens/hive-sim/src/simulator"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +35,9 @@ behavior. This is unlikely to happen in the real world.`,
 		nodeCount, _ := cmd.Flags().GetInt32("nodes")
 		contractCount, _ := cmd.Flags().GetInt32("contracts")
 		transactionLimit, _ := cmd.Flags().GetInt32("tlimit")
-		runBasicSimulation(int(serverCount), int(nodeCount),
+		format, _ := cmd.Flags().GetString("format")
+		out, _ := cmd.Flags().GetString("out")
+		runBasicSimulation(out, format, int(serverCount), int(nodeCount),
 			int(contractCount), int(transactionLimit))
 	},
 }
@@ -45,6 +48,8 @@ func init() {
 	runbasicCmd.Flags().Int32P("nodes", "n", 10, "Number of nodes per server to simulate")
 	runbasicCmd.Flags().Int32P("contracts", "c", 0, "Number of contracts per server to simulate")
 	runbasicCmd.Flags().Int32P("tlimit", "t", 0, "Exchange limit on a single contract")
+	runbasicCmd.Flags().StringP("format", "f", "console", "set the output format")
+	runbasicCmd.Flags().StringP("out", "o", "out.netsim", "set the output file")
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
@@ -56,20 +61,20 @@ func init() {
 	// runbasicCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func runBasicSimulation(serverCount int, nodeCount int, conCount int, transLimit int) {
-	sCount, nCount, cCount, tLimit := basicSanitizer(serverCount, nodeCount, conCount, transLimit)
+func runBasicSimulation(out string, fmt string, serverCount int, nodeCount int, conCount int, transLimit int) {
+	cleanFmt, sCount, nCount, cCount, tLimit := basicSanitizer(fmt, serverCount, nodeCount, conCount, transLimit)
 	nodeDist := makeEvenNodeDist(sCount, nCount)
 
 	basicGenerator := interactor.NewBasicGenerator(sCount, nCount, cCount, tLimit, nodeDist)
-	networkSimulator := simulator.NewHiveNet()
+	var formatter simulator.Formatter
+	formatter = reporter.NewConsoleFormatter()
+	if cleanFmt == "csv" {
+		formatter = reporter.NewCSVFormatter(out)
+	}
+	networkSimulator := simulator.NewHiveNet(formatter)
 
 	simulator.AllocateResources(networkSimulator, basicGenerator)
 	networkSimulator.Run()
-
-	logs := networkSimulator.NetworkLog()
-	for _, log := range logs {
-		log.Print()
-	}
 }
 
 var (
@@ -77,14 +82,23 @@ var (
 	nodePerMin    = 10
 	nodePerLimit  = 0xf4240
 	contractLimit = 0xf4240
+
+	supportedFormats = []string{"console", "csv"}
 )
 
-func basicSanitizer(serverCount int, nodeCount int, conCount int, transLimit int) (int, int, int, int) {
+func basicSanitizer(fmt string, serverCount int, nodeCount int, conCount int, transLimit int) (string, int, int, int, int) {
 	sCount := basicMinMaxIntSanitize(0, serverLimit, serverCount)
 	nCount := basicMinMaxIntSanitize(nodePerMin, nodePerLimit, nodeCount)
 	cCount := basicMinMaxIntSanitize(0, contractLimit, conCount)
 	tLimit := basicMinMaxIntSanitize(0, math.MaxInt32, transLimit)
-	return sCount, nCount, cCount, tLimit
+	cleanFmt := "console"
+	for _, fmtType := range supportedFormats {
+		if fmt == fmtType {
+			cleanFmt = fmt
+			break
+		}
+	}
+	return cleanFmt, sCount, nCount, cCount, tLimit
 }
 
 func basicMinMaxIntSanitize(min int, max int, val int) int {
